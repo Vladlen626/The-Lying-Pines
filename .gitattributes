@@ -38,7 +38,7 @@ Assets/Plugins/FMOD/**/*.info.plist text eol=lf
 *.bank binary
 *.strings.bank binary
 # Изображения
-*.jpg binary
+*.jpg filter=lfs diff=lfs merge=lfs -text
 *.jpeg binary
 *.png filter=lfs diff=lfs merge=lfs -text
 *.gif binary
@@ -50,14 +50,14 @@ Assets/Plugins/FMOD/**/*.info.plist text eol=lf
 *.exr binary
 *.hdr filter=lfs diff=lfs merge=lfs -text
 # Аудио
-*.mp3 binary
+*.mp3 filter=lfs diff=lfs merge=lfs -text
 *.ogg binary
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.aiff binary
 *.aif binary
 # Видео
-*.mp4 binary
-*.mov binary
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
 *.avi binary
 # 3D модели
 *.fbx filter=lfs diff=lfs merge=lfs -text
