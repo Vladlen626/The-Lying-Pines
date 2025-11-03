@@ -1,0 +1,26 @@
+{
+    "sequences": [
+        {
+            "id": "void_place",
+            "sceneId": "void_place",
+            "triggers": [
+                {
+                    "triggerId": "trigger_zone",
+                    "eventId": "next_sequence"
+                }
+            ],
+            "nextSequenceId": "pines_forest_intro"
+        },
+        {
+            "id": "pines_forest_intro",
+            "sceneId": "pines_forest_intro",
+            "triggers": [
+                {
+                    "triggerId": "trigger_zone",
+                    "eventId": "next_sequence"
+                }
+            ],
+            "nextSequenceId": "void_place"
+        }
+    ]
+}

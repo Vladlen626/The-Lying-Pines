@@ -1,0 +1,14 @@
+﻿{
+  "name": "MainGame",
+  "references": [
+    "PlatformCore",
+    "UniTask",
+    "TMPEffects",
+    "Unity.TextMeshPro",
+    "FMODUnity",
+    "Unity.Cinemachine",
+    "UnitySplines",
+    "DOTween.Modules",
+    "Unity.InputSystem"
+  ]
+}
