@@ -72,6 +72,8 @@ MonoBehaviour:
   _visual: {fileID: 5739710391406957462}
   _magnetRadius: 3
   _contactRadius: 0.25
+  collectibleFx: {fileID: 8771972552311404799, guid: d52a14e3fde7bc041b993f2c7d44e790, type: 3}
+  canBeCollected: 1
 --- !u!1 &7290150379277505351
 GameObject:
   m_ObjectHideFlags: 0

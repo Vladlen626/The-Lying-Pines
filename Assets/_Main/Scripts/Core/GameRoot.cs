@@ -4,6 +4,7 @@ using _Main.Scripts.Audio;
 using _Main.Scripts.Collectibles;
 using _Main.Scripts.Core.Services;
 using _Main.Scripts.Global.Controllers;
+using _Main.Scripts.Home;
 using _Main.Scripts.Inventory;
 using _Main.Scripts.Player;
 using _Main.Scripts.UI;
@@ -37,6 +38,7 @@ namespace _Main.Scripts.Core
 			var splashScreenService = new SplashScreenService(uiService);
 			var sceneService = new SceneService(logger);
 			var inventoryService = new InventoryService();
+			var timelineService = new TimelineService();
 
 			Services.Register<ILoggerService, LoggerService>(logger);
 			Services.Register<IInputService, InputBaseService>(inputService);
@@ -50,6 +52,7 @@ namespace _Main.Scripts.Core
 			Services.Register<ISplashScreenService, SplashScreenService>(splashScreenService);
 			Services.Register<ISceneService, SceneService>(sceneService);
 			Services.Register<IInventoryService, InventoryService>(inventoryService);
+			Services.Register<ITimelineService, TimelineService>(timelineService);
 
 			Debug.Log("[GameRoot] Services finally registered.!");
 		}
@@ -62,21 +65,43 @@ namespace _Main.Scripts.Core
 			var scene = Services.Get<ISceneService>();
 			var inventory = Services.Get<IInventoryService>();
 			var audio = Services.Get<IAudioService>();
+			var timelineService = Services.Get<ITimelineService>();
 
 			input.DisableAllInputs();
 			splash.FadeInAsync(0).Forget();
 
-			// === 1. Загружаем сцену и готовим сервисы ПАРАЛЛЕЛЬНО ===
 			var sceneTask = scene.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
 			var preloadUiTask = Services.Get<IUIService>().PreloadAsync<UIPlayerCrosshair>().AsTask();
 			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), preloadUiTask.AsUniTask());
 
-			// === 2. После загрузки сцены: контекст ===
 			Vector3 spawn = Vector3.zero;
+			var sceneControllers = new List<IBaseController>();
 			if (scene.TryGetSceneContext(SceneNames.Hub, out var ctx))
 			{
+				// SETUP SCENE CONTEXT
 				spawn = ctx.PlayerSpawnPos;
-				await HomeModule.BindFromContext(Lifecycle, Services, ctx, defaultCrumbsCost: 50);
+				var models = new List<HomeModel>();
+				foreach (var slot in ctx.Homes)
+				{
+					if (!slot.Home) continue;
+
+					var cost = slot.CrumbsCost > 0 ? slot.CrumbsCost : 50;
+					var req = new PurchaseRequirements(new Cost(CollectibleKind.Crumb, cost));
+
+					var model = new HomeModel(req);
+					models.Add(model);
+					var homeCtrl = new HomeController(model, slot.Home);
+					sceneControllers.Add(homeCtrl);
+					if (slot.Builder)
+					{
+						sceneControllers.Add(new CockroachController(slot.Builder, model, inventory, input));
+					}
+				}
+
+				var gameProgressModel = new GameProgressModel(ctx.Homes.Length);
+				sceneControllers.Add(new GameProgressController(gameProgressModel, models.ToArray()));
+				
+				timelineService.SetTimelineDirectors(ctx.HomeTimeLines, ctx.GameStartDirector, ctx.GameEndDirector);
 			}
 
 			var playerFactory = new PlayerFactory(Services);
@@ -87,12 +112,13 @@ namespace _Main.Scripts.Core
 			{
 				new PauseController(gameModel, Services),
 				new GameStateController(gameModel, input),
-				new AudioController(audio)
+				new AudioController(audio),
 			};
+
+			mainControllers.AddRange(sceneControllers);
 
 			var playerView = await playerViewTask;
 			mainControllers.AddRange(playerFactory.GetPlayerBaseControllers(playerModel, playerView));
-			mainControllers.Add(new CrumbCounterController());
 
 			await UniTask.WhenAll(mainControllers.Select(c => Lifecycle.RegisterAsync(c)));
 

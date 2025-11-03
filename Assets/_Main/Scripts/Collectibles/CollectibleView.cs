@@ -14,6 +14,9 @@ namespace _Main.Scripts.Collectibles
 		[SerializeField] private Transform _visual;
 		[SerializeField] private float _magnetRadius = 3f;
 		[SerializeField] private float _contactRadius = 0.25f;
+		[SerializeField] private GameObject collectibleFx;
+		
+		public bool canBeCollected = true;
 
 		private Collider _col;
 
@@ -62,6 +65,11 @@ namespace _Main.Scripts.Collectibles
 		{
 			if (_visual) _visual.localScale = _baseScale;
 			else transform.localScale = _baseScale;
+		}
+
+		public void PlayFx()
+		{
+			Instantiate(collectibleFx, _visual.position, Quaternion.identity);
 		}
 	}
 }

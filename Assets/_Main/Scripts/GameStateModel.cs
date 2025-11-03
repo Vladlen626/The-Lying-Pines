@@ -13,7 +13,7 @@ namespace _Main.Scripts
 		public int BuiltHomes { get; private set; }
 		public int TargetHomes { get; }
 		public bool Completed => BuiltHomes >= TargetHomes;
-		public event System.Action<int> BuiltChanged;
+		public event Action<int> BuiltChanged;
 
 		public GameProgressModel(int targetHomes)
 		{

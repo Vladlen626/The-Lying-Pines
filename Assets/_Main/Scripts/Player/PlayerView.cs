@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerView : MonoBehaviour
@@ -9,7 +10,8 @@ public class PlayerView : MonoBehaviour
 	[SerializeField] private Transform _playerTransform;
 	[SerializeField] private float _rotateSpeedDeg = 720f;
 	[SerializeField] private Transform _pickupAttach;
-	[SerializeField] private Animator _animator; 
+	[SerializeField] private Animator _animator;
+	[SerializeField] private GameObject _slamFx;
 	public Transform PickupAttach => _pickupAttach != null ? _pickupAttach : _cameraRoot;
 	public CharacterController Controller => _characterController;
 	public bool IsGrounded => _characterController.isGrounded;
@@ -52,5 +54,10 @@ public class PlayerView : MonoBehaviour
 	public void SetRotateSpeed(float degPerSec)
 	{
 		_rotateSpeedDeg = degPerSec;
+	}
+
+	public void PlaySlamFx()
+	{
+		Instantiate(_slamFx, _playerTransform.position, Quaternion.Euler(-90, 0, 0));
 	}
 }

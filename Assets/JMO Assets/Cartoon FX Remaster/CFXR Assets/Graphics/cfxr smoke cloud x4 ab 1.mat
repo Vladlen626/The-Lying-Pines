@@ -7,14 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: cfxr smoke cloud x4 ab
+  m_Name: cfxr smoke cloud x4 ab 1
   m_Shader: {fileID: -6465566751694194690, guid: 1a29b4d27eb8b04479ef89c00dea533d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHABLEND_ON
-  - _CFXR_DISSOLVE
   - _CFXR_DITHERED_SHADOWS_ON
+  - _CFXR_UV_DISTORTION
   - _FADING_ON
   m_InvalidKeywords:
   - _
@@ -35,11 +35,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DissolveTex:
-        m_Texture: {fileID: 2800000, guid: c1819aef53deedf40af80257ccb5b1a8, type: 3}
+        m_Texture: {fileID: 2800000, guid: c77bd9e350bb29b47bf79c281d43f52c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DistortTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ba5c573490b77f942a086e98994192a0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DitherCustom:
@@ -74,8 +74,8 @@ Material:
     - _DebugDissolveTime: 0
     - _DirLightScreenAtten: 1
     - _DirectLightingRamp: 1
-    - _DissolveSmooth: 0.15
-    - _Distort: 0.1
+    - _DissolveSmooth: 0.108
+    - _Distort: 0.266
     - _DoubleDissolve: 0
     - _DstBlend: 10
     - _EdgeFadePow: 1
@@ -97,7 +97,7 @@ Material:
     - _UVDistortionAdd: 0
     - _UseAlphaClip: 0
     - _UseBackLighting: 0
-    - _UseDissolve: 1
+    - _UseDissolve: 0
     - _UseDissolveOffsetUV: 0
     - _UseEF: 0
     - _UseEmission: 0
@@ -110,7 +110,7 @@ Material:
     - _UseSP: 1
     - _UseSecondColor: 0
     - _UseUV2Distortion: 0
-    - _UseUVDistortion: 0
+    - _UseUVDistortion: 1
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 2, g: 2, b: 2, a: 1}

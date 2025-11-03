@@ -21,4 +21,4 @@ namespace _Main.Scripts.Player
 		{
 		}
 	}
-}
+}	

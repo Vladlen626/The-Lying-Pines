@@ -25,7 +25,7 @@ namespace _Main.Scripts.Player
 		private readonly ICameraShakeService _shake;
 		private readonly PlayerModel _model;
 		private readonly IAudioService _audio;
-		
+
 		// сколько игнорим коллизию с разрушенным объектом, чтобы пролететь сквозь
 		private const float _ignoreDestructibleSecs = 0.20f;
 
@@ -56,7 +56,6 @@ namespace _Main.Scripts.Player
 			public float ForwardBoost = 5.5f; // горизонтальный толчок вперёд при отскоке
 			public float ShakeAmp = 1.1f, ShakeDur = 0.18f;
 			public string AudioImpact = "event:/ground_slam_impact";
-			public GameObject ImpactFx;
 		}
 
 		private readonly Model _cfg = new();
@@ -132,39 +131,58 @@ namespace _Main.Scripts.Player
 		private async UniTaskVoid DoImpactAndBounce()
 		{
 			// моментальный фидбек удара
-			_shake?.ShakeAsync(_cfg.ShakeAmp, _cfg.ShakeDur).Forget();
+			_shake?.ShakeAsync(_cfg.ShakeAmp * 0.6f, _cfg.ShakeDur * 0.5f).Forget();
 			if (!string.IsNullOrEmpty(_cfg.AudioImpact))
 				_audio?.PlaySoundAt(_cfg.AudioImpact, _view.Position);
 
 			// микро-задержка для "ощущения" удара
 			await UniTask.Delay(TimeSpan.FromSeconds(_cfg.ImpactDelay));
 
-			// FX
-			if (_cfg.ImpactFx)
-				GameObject.Instantiate(_cfg.ImpactFx, _view.Position, Quaternion.identity);
-
-			// ломаем окружение
+			// ломаем окружение (ящики и т.д.)
 			DoAreaImpact();
 
+			// ⚠️ теперь ждём, пока реально коснёмся земли
+			await WaitUntilTouchGround();
+
+			// FX (в этот момент жаба уже реально на полу)
+			_view.PlaySlamFx();
+
 			// === ОТСКОК ===
-			// вертикалка = как максимальный прыжок (будто Space зажат на максимум), БЕЗ стакинга
 			float maxJumpVy = Mathf.Sqrt(_model.jumpHeight * -2f * _model.gravity) * 1.1f;
-
-			// 1) не позволяем обычному прыжку сложиться с E-отскоком
 			_movement.SuppressJumpFor(_cfg.SuppressJumpTime);
-
-			// 2) перебиваем вертикалку на один кадр
 			_movement.RequestVerticalOverride(maxJumpVy);
 
-			// 3) горизонтальный импульс вперёд по взгляду камеры
 			var fwd = _view.CameraRoot.forward;
 			fwd.y = 0f;
 			fwd.Normalize();
 			_movement.AddImpulseXZ(fwd * _cfg.ForwardBoost);
 
-			// антиспам — можно снова жать E уже в воздухе
 			_cooldown = _cfg.AfterImpactCooldown;
 		}
+
+		private async UniTask WaitUntilTouchGround()
+		{
+			const float maxWait = 1.0f; // защита, если не нашли землю
+			float timer = 0f;
+
+			while (timer < maxWait)
+			{
+				// Проверяем, есть ли настоящая земля под жабой
+				var origin = _view.Position + Vector3.up * 0.2f;
+				if (Physics.Raycast(origin, Vector3.down, out var hit, 1.5f, GroundMask))
+				{
+					// проверяем, что слой не в ImpactMask (т.е. не Destructible)
+					if (((1 << hit.collider.gameObject.layer) & _cfg.ImpactMask) == 0)
+					{
+						return; // вот тогда реально касание земли
+					}
+				}
+
+				timer += Time.deltaTime;
+				await UniTask.Yield();
+			}
+		}
+
 
 		private void DoAreaImpact()
 		{
@@ -181,9 +199,9 @@ namespace _Main.Scripts.Player
 			var ctx = new ImpactCtx
 			{
 				Position = pos,
-				Radius   = _cfg.ImpactRadius,
-				Force    = Mathf.Abs(_cfg.DiveDownSpeed),
-				Source   = _view.PlayerTransform
+				Radius = _cfg.ImpactRadius,
+				Force = Mathf.Abs(_cfg.DiveDownSpeed),
+				Source = _view.PlayerTransform
 			};
 
 			// 1) Ломаем то, что под маской
@@ -200,7 +218,7 @@ namespace _Main.Scripts.Player
 			// 3) Мягко доснэпаться к настоящей земле под объектом (чтобы оттолкнуться именно от пола)
 			SnapDownToGroundAsync(~_cfg.ImpactMask).Forget();
 		}
-		
+
 		private async UniTaskVoid TemporarilyIgnoreDestructibles(Collider[] cols, CharacterController cc, float seconds)
 		{
 			if (cc == null || cols == null || cols.Length == 0) return;
@@ -224,11 +242,12 @@ namespace _Main.Scripts.Player
 
 		private async UniTask SnapDownToGroundAsync(LayerMask groundMask)
 		{
-			var origin   = _view.Position + Vector3.up * 0.20f;
+			var origin = _view.Position + Vector3.up * 0.20f;
 			float radius = 0.30f;
-			float maxDist= 2.50f;
+			float maxDist = 2.50f;
 
-			if (Physics.SphereCast(origin, radius, Vector3.down, out var hit, maxDist, groundMask, QueryTriggerInteraction.Ignore))
+			if (Physics.SphereCast(origin, radius, Vector3.down, out var hit, maxDist, groundMask,
+				    QueryTriggerInteraction.Ignore))
 			{
 				// небольшая подстройка вниз (оставим микро-зазор, чтобы не зажёвывало)
 				float dist = Mathf.Max(0f, hit.distance - 0.05f);
