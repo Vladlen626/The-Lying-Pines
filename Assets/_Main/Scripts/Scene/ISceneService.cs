@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace PlatformCore.Services
 {
-	public interface ISceneService : IService
+	public interface ISceneService
 	{
 		// _____________ Base _____________
 

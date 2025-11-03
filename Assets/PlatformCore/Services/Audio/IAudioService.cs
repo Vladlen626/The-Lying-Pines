@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services.Audio
 {
-	public interface IAudioService : IService
+	public interface IAudioService
 	{
 	UniTask PlayMusicAsync(string eventPath, float fadeTime = 0f);
 	UniTask StopMusicAsync(float fadeTime = 0f);

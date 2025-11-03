@@ -22,7 +22,7 @@ namespace _Main.Scripts.Core
 {
 	public class GameRoot : BaseGameRoot
 	{
-		protected override void RegisterServices(PlatformCore.Core.GameContext context)
+		protected override void RegisterServices(GameContext context)
 		{
 			Debug.Log("[GameRoot] Register services...");
 
@@ -30,7 +30,7 @@ namespace _Main.Scripts.Core
 			var inputService = new InputBaseService();
 			var resourcesService = new ResourceService(logger);
 			var objectFactory = new ObjectFactory(resourcesService, logger);
-			var cameraService = new CameraService(objectFactory);
+			var cameraService = new CameraAsyncService(objectFactory);
 			var audioService = new AudioBaseService(logger);
 			var uiService = new UIBaseService(logger, resourcesService, context.StaticCanvas, context.DynamicCanvas);
 			var cursorService = new CursorService(uiService);
@@ -38,88 +38,70 @@ namespace _Main.Scripts.Core
 			var sceneService = new SceneService(logger);
 			var inventoryService = new InventoryService();
 
-
-			Services.Register<ILoggerService>(logger);
-			Services.Register<ICursorService>(cursorService);
-			Services.Register<IInputService>(inputService);
-			Services.Register<IAudioService>(audioService);
-			Services.Register<IResourceService>(resourcesService);
-			Services.Register<IObjectFactory>(objectFactory);
-			Services.Register<ICameraService>(cameraService);
-			Services.Register<ICameraShakeService>(cameraService);
-			Services.Register<IUIService>(uiService);
-			Services.Register<ISplashScreenService>(splashScreenService);
-			Services.Register<ISceneService>(sceneService);
-			Services.Register<IInventoryService>(inventoryService);
+			Services.Register<ILoggerService, LoggerService>(logger);
+			Services.Register<IInputService, InputBaseService>(inputService);
+			Services.Register<IResourceService, ResourceService>(resourcesService);
+			Services.Register<IObjectFactory, ObjectFactory>(objectFactory);
+			Services.Register<ICameraService, CameraAsyncService>(cameraService);
+			Services.Register<ICameraShakeService, CameraAsyncService>(cameraService);
+			Services.Register<IAudioService, AudioBaseService>(audioService);
+			Services.Register<IUIService, UIBaseService>(uiService);
+			Services.Register<ICursorService, CursorService>(cursorService);
+			Services.Register<ISplashScreenService, SplashScreenService>(splashScreenService);
+			Services.Register<ISceneService, SceneService>(sceneService);
+			Services.Register<IInventoryService, InventoryService>(inventoryService);
 
 			Debug.Log("[GameRoot] Services finally registered.!");
-		}
-
-		protected override async UniTask InitializeServicesAsync()
-		{
-			var services = new IService[]
-			{
-				Services.Get<ILoggerService>(),
-				Services.Get<ICameraService>(),
-				Services.Get<IAudioService>(),
-				Services.Get<IInputService>(),
-				Services.Get<IResourceService>(),
-				Services.Get<IObjectFactory>(),
-				Services.Get<IUIService>(),
-				Services.Get<ICursorService>(),
-				Services.Get<ISplashScreenService>(),
-				Services.Get<ISceneService>(),
-				Services.Get<IInventoryService>(),
-			};
-
-			foreach (var service in services)
-			{
-				await service.InitializeAsync(ApplicationCancellationToken);
-			}
 		}
 
 		protected override async UniTask LaunchGameAsync(GameContext context)
 		{
 			var gameModel = new GameStateModel();
-			var splashScreenService = Services.Get<ISplashScreenService>();
-			var inputService = Services.Get<IInputService>();
-			var sceneService = Services.Get<ISceneService>();
-			var inventoryService = Services.Get<IInventoryService>();
+			var splash = Services.Get<ISplashScreenService>();
+			var input = Services.Get<IInputService>();
+			var scene = Services.Get<ISceneService>();
+			var inventory = Services.Get<IInventoryService>();
+			var audio = Services.Get<IAudioService>();
 
-			inputService.DisableAllInputs();
-			splashScreenService.FadeInAsync(0).Forget();
+			input.DisableAllInputs();
+			splash.FadeInAsync(0).Forget();
 
-			await sceneService.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
-			var mainControllers = new List<IBaseController>()
+			// === 1. Загружаем сцену и готовим сервисы ПАРАЛЛЕЛЬНО ===
+			var sceneTask = scene.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
+			var preloadUiTask = Services.Get<IUIService>().PreloadAsync<UIPlayerCrosshair>().AsTask();
+			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), preloadUiTask.AsUniTask());
+
+			// === 2. После загрузки сцены: контекст ===
+			Vector3 spawn = Vector3.zero;
+			if (scene.TryGetSceneContext(SceneNames.Hub, out var ctx))
 			{
-				new PauseController(gameModel, Services),
-				new GameStateController(gameModel, inputService),
-				new AudioController(Services.Get<IAudioService>()),
-			};
-
-			var playerSpawnPosition = Vector3.zero;
-			if (sceneService.TryGetSceneContext(SceneNames.Hub, out var context1))
-			{
-				playerSpawnPosition = context1.PlayerSpawnPos;
-				await HomeModule.BindFromContext(Lifecycle, Services, context1, defaultCrumbsCost: 50);
+				spawn = ctx.PlayerSpawnPos;
+				await HomeModule.BindFromContext(Lifecycle, Services, ctx, defaultCrumbsCost: 50);
 			}
 
-			var playerModel = new PlayerModel();
 			var playerFactory = new PlayerFactory(Services);
-			var playerView = await playerFactory.CreatePlayerView(playerSpawnPosition);
+			var playerModel = new PlayerModel();
+			var playerViewTask = playerFactory.CreatePlayerView(spawn);
+
+			var mainControllers = new List<IBaseController>
+			{
+				new PauseController(gameModel, Services),
+				new GameStateController(gameModel, input),
+				new AudioController(audio)
+			};
+
+			var playerView = await playerViewTask;
 			mainControllers.AddRange(playerFactory.GetPlayerBaseControllers(playerModel, playerView));
 			mainControllers.Add(new CrumbCounterController());
 
-			foreach (var controller in mainControllers)
-			{
-				await Lifecycle.RegisterAsync(controller);
-			}
+			await UniTask.WhenAll(mainControllers.Select(c => Lifecycle.RegisterAsync(c)));
 
-			await CollectibleModule.BindSceneCollectibles(Lifecycle, inventoryService, playerView);
-			await UniTask.Delay(500, DelayType.UnscaledDeltaTime, cancellationToken: ApplicationCancellationToken);
-			await splashScreenService.FadeOutAsync();
+			var collectiblesTask = CollectibleModule.BindSceneCollectibles(Lifecycle, inventory, playerView);
+			var fadeOutTask = splash.FadeOutAsync();
 
-			inputService.EnableAllInputs();
+			await UniTask.WhenAll(collectiblesTask, fadeOutTask);
+
+			input.EnableAllInputs();
 		}
 	}
 }

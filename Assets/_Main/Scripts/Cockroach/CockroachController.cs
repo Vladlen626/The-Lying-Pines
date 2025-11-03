@@ -28,6 +28,7 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 		_input.OnInteractPressed += OnInteractHandler;
 		_view.PlayerEnter += OnEnter;
 		_view.PlayerExit += OnExit;
+		HideTooltip();
 	}
 
 	public void Deactivate()
@@ -61,7 +62,7 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 	private void OnEnter()
 	{
 		_inside = true;
-		ShowTooltip("Come closer...");
+		ShowTooltip("mmm... crumbs...");
 	}
 
 	private void OnExit()
@@ -82,7 +83,9 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 	private void HideTooltip()
 	{
 		if (_view.Tooltip)
+		{
 			_view.Tooltip.gameObject.SetActive(false);
+		}
 	}
 
 	private void OnInteractHandler()

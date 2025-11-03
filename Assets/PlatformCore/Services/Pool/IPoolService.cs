@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services.Pool
 {
-	public interface IPoolService : IService
+	public interface IPoolService
 	{
 		UniTask CreatePoolAsync<T>(string prefabPath, int initialSize = 10, Transform parent = null)
 			where T : Component;

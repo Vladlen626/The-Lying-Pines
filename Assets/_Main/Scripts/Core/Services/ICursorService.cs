@@ -2,7 +2,7 @@
 
 namespace _Main.Scripts.Core.Services
 {
-	public interface ICursorService : IService
+	public interface ICursorService
 	{
 		public event Action OnCursorStateChanged;
 		void LockCursor();

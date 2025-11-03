@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services.Factory
 {
-	public class ObjectFactory : IObjectFactory
+	public class ObjectFactory : BaseAsyncService, IObjectFactory
 	{
 		private readonly IResourceService _resourceService;
 		private readonly ILoggerService _loggerService;
@@ -14,12 +14,6 @@ namespace PlatformCore.Services.Factory
 		{
 			_resourceService = resourceService;
 			_loggerService = loggerService;
-		}
-
-		public UniTask InitializeAsync(CancellationToken cancellationToken)
-		{
-			_loggerService?.Log("[ObjectFactory] Initialized");
-			return UniTask.CompletedTask;
 		}
 
 		public async UniTask<GameObject> CreateAsync(string address, Vector3 position, Quaternion rotation,
@@ -78,11 +72,6 @@ namespace PlatformCore.Services.Factory
 
 			_loggerService?.Log($"[ObjectFactory] Destroying: {obj.name}");
 			Object.Destroy(obj);
-		}
-
-		public void Dispose()
-		{
-			_loggerService?.Log("[ObjectFactory] Disposed");
 		}
 	}
 }

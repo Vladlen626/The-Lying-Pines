@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace _Main.Scripts.Core.Services
 {
-	public class InputBaseService : BaseService, IInputService
+	public class InputBaseService : IInputService, ISyncInitializable
 	{
 		public event Action OnJumpPressed;
 		public event Action OnJumpReleased;
@@ -22,13 +23,12 @@ namespace _Main.Scripts.Core.Services
 		private Vector2 _lookInput;
 		private bool _cancelInput;
 
-		protected override UniTask InitializeServiceAsync()
+		public void Initialize()
 		{
 			_actions = new InputSystem_Actions();
 
 			BindActions();
 			EnableAllInputs();
-			return UniTask.CompletedTask;
 		}
 
 		public void EnableAllInputs()
@@ -73,7 +73,7 @@ namespace _Main.Scripts.Core.Services
 
 			_actions.Player.Look.performed += ctx => { Look = ctx.ReadValue<Vector2>(); };
 			_actions.Player.Look.canceled += _ => { Look = Vector2.zero; };
-			
+
 			_actions.Player.Interact.started += _ =>
 			{
 				IsInteract = true;
@@ -96,7 +96,7 @@ namespace _Main.Scripts.Core.Services
 			_actions.UI.Cancel.started += _ => OnPausePressed?.Invoke();
 		}
 
-		protected override void DisposeService()
+		public void Dispose()
 		{
 			if (_actions != null)
 			{

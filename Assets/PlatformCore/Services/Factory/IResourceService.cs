@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services
 {
-	public interface IResourceService : IService
+	public interface IResourceService
 	{
 		UniTask<T>  LoadAsync<T>(string path) where T : Object;
 		void Unload(Object obj);

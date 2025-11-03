@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace PlatformCore.Services
 {
-	public class LoggerService : ILoggerService
+	public class LoggerService : ILoggerService, ISyncInitializable
 	{
 		private const string LogPrefix = "[GAME]";
 
-		public UniTask InitializeAsync(CancellationToken ct)
+		public void Initialize()
 		{
 			Debug.Log($"{LogPrefix} Logger initialized");
-			return UniTask.CompletedTask;
 		}
 
 		public void Log(string message)

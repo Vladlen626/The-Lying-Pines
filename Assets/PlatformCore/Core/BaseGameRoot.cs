@@ -8,7 +8,6 @@ namespace PlatformCore.Core
 {
 	public abstract class BaseGameRoot : IDisposable
 	{
-		
 #if UNITY_EDITOR
 		public ServiceLocator EditorServices => Services;
 #endif
@@ -25,23 +24,31 @@ namespace PlatformCore.Core
 			_lifetimeService = new ApplicationLifetimeService();
 		}
 
-		public async UniTask LaunchAsync(GameContext gameContext)
+		public async UniTask LaunchAsync(GameContext context)
 		{
 			try
 			{
-				RegisterServices(gameContext);
+				RegisterServices(context);
 				await InitializeServicesAsync();
-				await LaunchGameAsync(gameContext);
+				await LaunchGameAsync(context);
 			}
 			catch (OperationCanceledException)
 			{
 				Debug.LogWarning("[GameRoot] Launch cancelled (application closing)");
 			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"[GameRoot] Launch failed: {ex}");
+				throw;
+			}
+		}
+
+		protected virtual async UniTask InitializeServicesAsync()
+		{
+			await Services.InitializeAllAsync(ApplicationCancellationToken);
 		}
 
 		protected abstract void RegisterServices(GameContext gameContext);
-
-		protected abstract UniTask InitializeServicesAsync();
 
 		protected abstract UniTask LaunchGameAsync(GameContext gameContext);
 
@@ -63,9 +70,18 @@ namespace PlatformCore.Core
 
 		public void Dispose()
 		{
-			_lifetimeService?.Dispose();
-			Lifecycle.Dispose();
-			Services.DisposeAll();
+			try
+			{
+				_lifetimeService?.Dispose();
+				Lifecycle?.Dispose();
+				Services?.Dispose();
+
+				Debug.Log("[GameRoot] Disposed successfully");
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"[GameRoot] Dispose error: {ex}");
+			}
 		}
 	}
 }

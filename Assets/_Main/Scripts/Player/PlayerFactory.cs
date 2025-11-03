@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using PlatformCore.Core;
 using PlatformCore.Infrastructure.Lifecycle;
 using PlatformCore.Services;
+using PlatformCore.Services.Audio;
 using PlatformCore.Services.Factory;
 using UnityEngine;
 using IObjectFactory = PlatformCore.Services.Factory.IObjectFactory;
@@ -38,10 +39,14 @@ namespace _Main.Scripts.Player
 		{
 			var inputService = _serviceLocator.Get<IInputService>();
 			var cameraService = _serviceLocator.Get<ICameraService>();
+			var playerMovementController = new PlayerMovementController(inputService, playerModel, playerView,
+				cameraService.GetCameraTransform());
 			
 			return new IBaseController[]
 			{
-				new PlayerMovementController(inputService, playerModel, playerView, cameraService.GetCameraTransform()),
+				playerMovementController,
+				new PlayerSlamBounceController(inputService, playerMovementController, playerView,
+					_serviceLocator.Get<ICameraShakeService>(), playerModel,_serviceLocator.Get<IAudioService>()),
 				new PlayerCameraController(_serviceLocator, playerView),
 				new PlayerAnimationController(inputService, playerModel, playerView),
 				new PlayerJuiceController(playerView),

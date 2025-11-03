@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services
 {
-	public class ResourceService : IResourceService
+	public class ResourceService : BaseAsyncService, IResourceService
 	{
 		private readonly ILoggerService _loggerService;
 

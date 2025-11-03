@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 
 namespace PlatformCore.Services.GameStates
 {
-	public interface IGameStateService : IService
+	public interface IGameStateService
 	{
 		GameState CurrentState { get; }
 		UniTask SwitchToState(GameState newState, CancellationToken  ct = default);

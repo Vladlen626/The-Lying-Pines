@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace PlatformCore.Services.Pool
 {
-	public class PoolService : IPoolService
+	public class PoolService : IPoolService, IService
 	{
 		private readonly ILoggerService _logger;
 		private readonly IResourceService _resourceService;
@@ -21,12 +21,6 @@ namespace PlatformCore.Services.Pool
 			_logger = logger;
 			_resourceService = resourceService;
 			_poolRoot = poolRoot;
-		}
-
-		public UniTask InitializeAsync(CancellationToken ct)
-		{
-			_logger?.Log("[PoolService] Initialized");
-			return UniTask.CompletedTask;
 		}
 
 		public async UniTask CreatePoolAsync<T>(string prefabPath, int initialSize = 10, Transform parent = null)

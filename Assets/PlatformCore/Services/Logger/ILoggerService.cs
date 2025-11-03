@@ -2,7 +2,7 @@
 
 namespace PlatformCore.Services
 {
-	public interface ILoggerService : IService
+	public interface ILoggerService
 	{
 		// ReSharper disable Unity.PerformanceAnalysis
 		void Log(string message);

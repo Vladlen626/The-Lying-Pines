@@ -4,7 +4,7 @@ using _Main.Scripts.Collectibles;
 
 namespace _Main.Scripts.Inventory
 {
-	public interface IInventoryService : IService
+	public interface IInventoryService
 	{
 		event Action<CollectibleKind, int, int> Changed;
 		void Add(CollectibleKind kind, int amount);

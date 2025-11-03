@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services.Factory
 {
-	public interface IObjectFactory : IService
+	public interface IObjectFactory
 	{
 		UniTask<GameObject> CreateAsync(
 			string address,

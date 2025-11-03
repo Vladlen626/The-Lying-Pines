@@ -24,6 +24,11 @@ namespace _Main.Scripts.Player
 		private bool _wasGrounded;
 		private Vector3 _groundNormal = Vector3.up;
 
+		private bool _hasPendingVerticalOverride;
+		private float _pendingVerticalY;
+		private Vector3 _pendingImpulseXZ;
+
+
 		public PlayerMovementController(IInputService inputService, PlayerModel playerModel, PlayerView playerView,
 			Transform cameraTransform)
 		{
@@ -36,6 +41,17 @@ namespace _Main.Scripts.Player
 		public void OnUpdate(float deltaTime)
 		{
 			HandleMovement(deltaTime);
+		}
+
+		public void RequestVerticalOverride(float y)
+		{
+			_hasPendingVerticalOverride = true;
+			_pendingVerticalY = y; // заменить вертикальную скорость в ЭТОМ кадре
+		}
+
+		public void AddImpulseXZ(Vector3 impulse)
+		{
+			_pendingImpulseXZ += new Vector3(impulse.x, 0f, impulse.z); // прибавить к XZ-скорости
 		}
 
 		private void HandleMovement(float dt)
@@ -85,8 +101,14 @@ namespace _Main.Scripts.Player
 
 			_velXZ = Vector3.Lerp(_velXZ, targetXZ, 1f - Mathf.Exp(-accel * dt));
 
+
 			// === Прыжок с coyote + buffer ===
-			if (_jumpBufferTimer > 0f && _coyoteTimer > 0f)
+			if (_suppressJumpTimer > 0f)
+			{
+				_suppressJumpTimer -= dt;
+			}
+
+			if (_suppressJumpTimer <= 0f && _jumpBufferTimer > 0f && _coyoteTimer > 0f)
 			{
 				_jumpBufferTimer = 0f;
 				_coyoteTimer = 0f;
@@ -110,6 +132,17 @@ namespace _Main.Scripts.Player
 			// Лёгкое прилипание к земле
 			if (_isGrounded && _verticalY < 0f)
 				_verticalY = -2f;
+			
+			if (_hasPendingVerticalOverride)
+			{
+				_verticalY = _pendingVerticalY;           // перебиваем липучку и граву, если надо
+				_hasPendingVerticalOverride = false;
+			}
+			if (_pendingImpulseXZ.sqrMagnitude > 0f)
+			{
+				_velXZ += _pendingImpulseXZ;
+				_pendingImpulseXZ = Vector3.zero;
+			}
 
 			// === Сборка вектора и поворот ===
 			_velocity = new Vector3(_velXZ.x, _verticalY, _velXZ.z);
@@ -138,6 +171,11 @@ namespace _Main.Scripts.Player
 			}
 
 			return false;
+		}
+		
+		private float _suppressJumpTimer;
+		public void SuppressJumpFor(float duration) {
+			if (duration > _suppressJumpTimer) _suppressJumpTimer = duration;
 		}
 	}
 }

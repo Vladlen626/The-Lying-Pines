@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using _Main.Scripts.Core.Services;
 using Cysharp.Threading.Tasks;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace PlatformCore.Infrastructure
 {
-	public class CursorService : BaseService, ICursorService
+	public class CursorService : ICursorService, ISyncInitializable
 	{
 		public event Action OnCursorStateChanged;
 		private readonly IUIService _uiService;
@@ -19,11 +20,10 @@ namespace PlatformCore.Infrastructure
 			_uiService = uiService;
 		}
 
-		protected override UniTask InitializeServiceAsync()
+		public void Initialize()
 		{
 			LockCursor();
-			_uiService.PreloadAsync<UIPlayerCrosshair>();
-			return UniTask.CompletedTask;
+			_uiService.PreloadAsync<UIPlayerCrosshair>().Forget();
 		}
 
 		public void LockCursor()
@@ -38,6 +38,11 @@ namespace PlatformCore.Infrastructure
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 			OnCursorStateChanged?.Invoke();
+		}
+
+		public void Dispose()
+		{
+			UnlockCursor();
 		}
 	}
 }

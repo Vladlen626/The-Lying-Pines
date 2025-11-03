@@ -3,64 +3,63 @@ using System.Collections.Generic;
 
 namespace PlatformCore.Core
 {
-	public class ServiceLocator
+	public sealed class ServiceLocator : IDisposable
 	{
-		private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
+		private readonly Dictionary<Type, IService> _services = new();
 
-		public void Register<T>(T service) where T : class, IService
+		public void Register<TInterface, TImplementation>(TImplementation instance)
+			where TInterface : class
+			where TImplementation : class, IService, TInterface
 		{
-			if (service == null)
-			{
-				throw new ArgumentNullException(nameof(service));
-			}
+			if (instance == null)
+				throw new ArgumentNullException(nameof(instance));
 
-			var serviceType = typeof(T);
-
-			if (!_services.TryAdd(serviceType, service))
+			var key = typeof(TInterface);
+			if (!_services.TryAdd(key, instance))
 			{
-				UnityEngine.Debug.LogWarning($"Service {serviceType.Name} already registered. Skipping.");
+				UnityEngine.Debug.LogWarning($"Service {key.Name} already registered. Skipped.");
 			}
 		}
 
-		public T Get<T>() where T : class, IService
+		public T Get<T>() where T : class
 		{
-			var serviceType = typeof(T);
+			if (_services.TryGetValue(typeof(T), out var service))
+				return service as T;
 
-			if (!_services.TryGetValue(serviceType, out var service))
+			throw new InvalidOperationException($"Service {typeof(T).Name} not registered.");
+		}
+
+		public bool TryGet<T>(out T result) where T : class, IService
+		{
+			if (_services.TryGetValue(typeof(T), out var s))
 			{
-				throw new InvalidOperationException(
-					$"Service {serviceType.Name} not registered. " +
-					$"Call Register<{serviceType.Name}>() in GameRoot first.");
+				result = (T)s;
+				return true;
 			}
 
-			return service as T;
+			result = null;
+			return false;
 		}
 
-		public T TryGet<T>() where T : class, IService
-		{
-			var serviceType = typeof(T);
-			return _services.TryGetValue(serviceType, out var service) ? service as T : null;
-		}
+		public IEnumerable<IService> All => _services.Values;
 
 		public bool Has<T>() where T : class, IService
-		{
-			return _services.ContainsKey(typeof(T));
-		}
+			=> _services.ContainsKey(typeof(T));
 
-		public IReadOnlyDictionary<Type, object> GetAll()
+		public void Dispose()
 		{
-			return _services;
-		}
-		
-		public void DisposeAll()
-		{
-			foreach (var service in _services.Values)
+			foreach (var s in _services.Values)
 			{
-				if (service is IDisposable disposable)
+				try
 				{
-					disposable.Dispose();
+					s.Dispose();
+				}
+				catch (Exception e)
+				{
+					UnityEngine.Debug.LogError($"[ServiceLocator] Dispose failed for {s.GetType().Name}: {e}");
 				}
 			}
+
 			_services.Clear();
 		}
 	}

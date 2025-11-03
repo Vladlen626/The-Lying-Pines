@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services
 {
-	public interface ICameraShakeService : IService
+	public interface ICameraShakeService
 	{
 		UniTask ShakeAsync(float intensity, float duration);
 		void StopShake();

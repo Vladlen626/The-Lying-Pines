@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace PlatformCore.Services.GameStates
 {
-	public class GameStateService : IGameStateService
+	public class GameStateService : IGameStateService, IService
 	{
 		public event Action<GameState, GameState> StateChanged;
 
@@ -19,12 +19,6 @@ namespace PlatformCore.Services.GameStates
 		public GameStateService(ILoggerService loggerService, IUIService uiService)
 		{
 			_loggerService = loggerService;
-		}
-
-		public UniTask InitializeAsync(CancellationToken cancellationToken)
-		{
-			_loggerService?.Log("[GameStateService] Initialized");
-			return UniTask.CompletedTask;
 		}
 
 		public UniTask SwitchToState(GameState newState, CancellationToken ct = default)

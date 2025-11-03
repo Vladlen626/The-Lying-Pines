@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using _Main.Scripts.Collectibles;
 
 namespace _Main.Scripts.Inventory
 {
-	public sealed class InventoryService : BaseService, IInventoryService
+	public sealed class InventoryService : IInventoryService, IService
 	{
 		// TODO[JAM] Inventory: сейчас состояние живёт в памяти без сохранения.
 
 		// PLAN: после джема добавить Save/Load снапшота и транзакции с откатом (если появятся внешние ошибки при оплате).
-		public event System.Action<CollectibleKind, int, int> Changed;
+		public event Action<CollectibleKind, int, int> Changed;
 
 		private readonly Dictionary<CollectibleKind, int> _counts = new()
 		{
@@ -18,15 +19,10 @@ namespace _Main.Scripts.Inventory
 			{ CollectibleKind.Baguette, 0 },
 		};
 
-		protected override UniTask InitializeServiceAsync()
-		{
-			return UniTask.CompletedTask;
-		}
-
 		public void Add(CollectibleKind kind, int amount)
 		{
 			if (amount == 0) return;
-			_counts[kind] = System.Math.Max(0, _counts[kind] + amount);
+			_counts[kind] = Math.Max(0, _counts[kind] + amount);
 			Changed?.Invoke(kind, _counts[kind], amount);
 		}
 
@@ -78,5 +74,10 @@ namespace _Main.Scripts.Inventory
 		public int Total =>
 			_counts[CollectibleKind.Crumb] + _counts[CollectibleKind.Croissant] +
 			_counts[CollectibleKind.Baguette];
+
+		public void Dispose()
+		{
+			Changed = null;
+		}
 	}
 }

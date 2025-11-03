@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace PlatformCore.Services.UI
 {
-	public interface IUIService : IService
+	public interface IUIService
 	{
 		UniTask<T> ShowAsync<T>(float duration = 0) where T : BaseUIElement;
 		UniTask HideAsync<T>(float duration = 0) where T : BaseUIElement;

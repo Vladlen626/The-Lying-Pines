@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace PlatformCore.Services.UI.SplashScreen
 {
-	public class SplashScreenService : BaseService, ISplashScreenService
+	public class SplashScreenService : BaseAsyncService, ISplashScreenService
 	{
 		private readonly IUIService _uiService;
 
@@ -14,7 +15,7 @@ namespace PlatformCore.Services.UI.SplashScreen
 			_uiService = uiService;
 		}
 
-		protected override UniTask InitializeServiceAsync()
+		protected override UniTask OnPostInitializeAsync(CancellationToken ServiceToken)
 		{
 			return _uiService.PreloadAsync<SplashScreenElement>();
 		}
@@ -36,7 +37,7 @@ namespace PlatformCore.Services.UI.SplashScreen
 		public async UniTask ShowSplashAsync(float duration = 2f, float fadeIn = 0.5f, float fadeOut = 0.5f)
 		{
 			await FadeInAsync(fadeIn);
-			await UniTask.Delay(TimeSpan.FromSeconds(duration), cancellationToken: ServiceToken);
+			await UniTask.Delay(TimeSpan.FromSeconds(duration));
 			await FadeOutAsync(fadeOut);
 		}
 	}

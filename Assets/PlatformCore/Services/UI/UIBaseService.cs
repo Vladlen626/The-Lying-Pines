@@ -7,195 +7,156 @@ using Object = UnityEngine.Object;
 
 namespace PlatformCore.Services.UI
 {
-	public class UIBaseService : BaseService, IUIService
+	public sealed class UIBaseService : BaseAsyncService, IUIService
 	{
-		private readonly ILoggerService _loggerService;
-		private readonly IResourceService _resourceService;
+		private readonly ILoggerService _logger;
+		private readonly IResourceService _resources;
 
 		private readonly Transform _staticCanvas;
 		private readonly Transform _dynamicCanvas;
 
-		private readonly Dictionary<Type, BaseUIElement> _loadedWindows = new Dictionary<Type, BaseUIElement>();
+		private readonly Dictionary<Type, BaseUIElement> _windows = new();
 
-		public UIBaseService(ILoggerService loggerService,
-			IResourceService resourceService,
-			Transform staticCanvas,
-			Transform dynamicCanvas)
+		// локальный токен для отмены
+		private CancellationTokenSource _cts;
+		private CancellationToken _token;
+
+		public UIBaseService(ILoggerService logger, IResourceService resources,
+			Transform staticCanvas, Transform dynamicCanvas)
 		{
-			_loggerService = loggerService;
-			_resourceService = resourceService;
+			_logger = logger;
+			_resources = resources;
 			_staticCanvas = staticCanvas;
 			_dynamicCanvas = dynamicCanvas;
 		}
 
-		protected override UniTask InitializeServiceAsync()
+		protected override UniTask OnPreInitializeAsync(CancellationToken ct)
 		{
-			_loggerService?.Log("[UIService] Initialized successfully");
+			_cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+			_token = _cts.Token;
+			_logger?.Log("[UIService] Initialized");
 			return UniTask.CompletedTask;
 		}
-		
+
+		// === SHOW ===
 		public async UniTask<T> ShowAsync<T>(float duration) where T : BaseUIElement
 		{
 			var type = typeof(T);
+			if (!_windows.TryGetValue(type, out var window))
+				window = await LoadAsync<T>(_token);
 
-			if (_loadedWindows.TryGetValue(type, out var existingWindow))
+			if (window == null)
 			{
-				existingWindow.gameObject.SetActive(true);
-				await existingWindow.OnShowAsync(duration, ServiceToken);
-
-				_loggerService?.Log($"[UIService] Showed cached window: {type.Name}");
-				return existingWindow as T;
+				_logger?.LogError($"[UIService] Failed to show: {type.Name}");
+				return null;
 			}
 
-			var window = await LoadWindowAsync<T>();
-			if (window != null)
-			{
-				window.gameObject.SetActive(true);
-				await window.OnShowAsync(duration, ServiceToken);
-				_loggerService?.Log($"[UIService] Showed new window: {type.Name}");
-			}
-
-			return window;
+			window.gameObject.SetActive(true);
+			await window.OnShowAsync(duration, _token);
+			return (T)window;
 		}
 
+		// === HIDE ===
 		public async UniTask HideAsync<T>(float duration) where T : BaseUIElement
 		{
-			var type = typeof(T);
+			if (!_windows.TryGetValue(typeof(T), out var window) || window == null)
+				return;
 
-			if (_loadedWindows.TryGetValue(type, out var window))
-			{
-				await window.OnHideAsync(duration, ServiceToken);
-				window.gameObject.SetActive(false);
-
-				_loggerService?.Log($"[UIService] Hidden window with animation: {type.Name}");
-			}
-			else
-			{
-				_loggerService?.LogWarning($"[UIService] Cannot hide, window not loaded: {type.Name}");
-			}
+			await window.OnHideAsync(duration, _token);
+			window.gameObject.SetActive(false);
 		}
 
 		public void Hide<T>() where T : BaseUIElement
 		{
-			var type = typeof(T);
-
-			if (_loadedWindows.TryGetValue(type, out var window))
+			if (_windows.TryGetValue(typeof(T), out var window) && window != null)
 			{
 				window.OnHide();
 				window.gameObject.SetActive(false);
-
-				_loggerService?.Log($"[UIService] Hidden window instantly: {type.Name}");
-			}
-			else
-			{
-				_loggerService?.LogWarning($"[UIService] Cannot hide, window not loaded: {type.Name}");
 			}
 		}
 
+		// === STATE ===
 		public T Get<T>() where T : BaseUIElement
 		{
-			_loadedWindows.TryGetValue(typeof(T), out var window);
-			return window as T;
+			return _windows.TryGetValue(typeof(T), out var window) ? window as T : null;
 		}
 
 		public bool IsShowed<T>() where T : BaseUIElement
 		{
-			if (_loadedWindows.TryGetValue(typeof(T), out var window))
-			{
-				return window.gameObject.activeSelf;
-			}
-
-			return false;
+			return _windows.TryGetValue(typeof(T), out var window) && window.gameObject.activeSelf;
 		}
 
+		// === PRELOAD / UNLOAD ===
 		public async UniTask PreloadAsync<T>() where T : BaseUIElement
 		{
 			var type = typeof(T);
-
-			if (_loadedWindows.ContainsKey(type))
-			{
-				_loggerService?.Log($"[UIService] Window already preloaded: {type.Name}");
+			if (_windows.ContainsKey(type))
 				return;
-			}
 
-			var window = await LoadWindowAsync<T>().AttachExternalCancellation(ServiceToken);
-			if (window != null)
-			{
-				window.gameObject.SetActive(false);
-				_loggerService?.Log($"[UIService] Window preloaded: {type.Name}");
-			}
+			await LoadAsync<T>(_token);
 		}
 
 		public void Unload<T>() where T : BaseUIElement
 		{
 			var type = typeof(T);
+			if (!_windows.TryGetValue(type, out var window))
+				return;
 
-			if (_loadedWindows.TryGetValue(type, out var window))
-			{
-				window.OnHide();
-				Object.Destroy(window.gameObject);
-				_loadedWindows.Remove(type);
-
-				_loggerService?.Log($"[UIService] Window unloaded: {type.Name}");
-			}
+			window.OnHide();
+			Object.Destroy(window.gameObject);
+			_windows.Remove(type);
+			_logger?.Log($"[UIService] Unloaded window: {type.Name}");
 		}
 
-		private async UniTask<T> LoadWindowAsync<T>() where T : BaseUIElement
+		// === INTERNAL LOADING ===
+		private async UniTask<T> LoadAsync<T>(CancellationToken ct) where T : BaseUIElement
 		{
 			var type = typeof(T);
+			var path = $"UI/{type.Name}";
+			_logger?.Log($"[UIService] Loading window: {path}");
 
-			var resourcePath = $"UI/{type.Name}";
-			_loggerService?.Log($"[UIService] Loading window: {resourcePath}");
-
-			var prefab = await _resourceService.LoadAsync<GameObject>(resourcePath);
+			var prefab = await _resources.LoadAsync<GameObject>(path);
 			if (prefab == null)
 			{
-				_loggerService?.LogError($"[UIService] Failed to load prefab: {resourcePath}");
+				_logger?.LogError($"[UIService] Missing prefab: {path}");
 				return null;
 			}
 
 			var prefabComponent = prefab.GetComponent<T>();
 			if (prefabComponent == null)
 			{
-				_loggerService?.LogError($"[UIService] Component {type.Name} not found on prefab");
+				_logger?.LogError($"[UIService] Missing component {type.Name} on prefab");
 				return null;
 			}
 
-			var targetCanvas = prefabComponent.CanvasType == UICanvasType.Static
-				? _staticCanvas
-				: _dynamicCanvas;
-
-			var instance = Object.Instantiate(prefab, targetCanvas.transform);
+			var target = prefabComponent.CanvasType == UICanvasType.Static ? _staticCanvas : _dynamicCanvas;
+			var instance = Object.Instantiate(prefab, target);
 			var component = instance.GetComponent<T>();
 
 			if (component == null)
 			{
-				_loggerService?.LogError($"[UIService] Component lost during instantiation: {type.Name}");
 				Object.Destroy(instance);
+				_logger?.LogError($"[UIService] Component lost after instantiate: {type.Name}");
 				return null;
 			}
 
-			_loadedWindows[type] = component;
-
-			_loggerService?.Log($"[UIService] Window loaded to {prefabComponent.CanvasType} Canvas: {type.Name}");
+			component.gameObject.SetActive(false);
+			_windows[type] = component;
+			_logger?.Log($"[UIService] Loaded {type.Name} to {prefabComponent.CanvasType} Canvas");
 			return component;
 		}
-		
-		protected override void DisposeService()
+
+		// === CLEANUP ===
+		public override void Dispose()
 		{
-			_loggerService?.Log("[UIService] Disposing all windows...");
+			foreach (var w in _windows.Values)
+				if (w)
+					Object.Destroy(w.gameObject);
 
-			foreach (var window in _loadedWindows.Values)
-			{
-				if (!window)
-				{
-					window.OnHide();
-					Object.Destroy(window);
-				}
-			}
-
-			_loadedWindows.Clear();
-			_loggerService?.Log("[UIService] UIService disposed");
+			_windows.Clear();
+			_cts?.Cancel();
+			_cts?.Dispose();
+			_logger?.Log("[UIService] Disposed");
 		}
 	}
 }

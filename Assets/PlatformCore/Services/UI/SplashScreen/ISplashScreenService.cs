@@ -2,7 +2,7 @@
 
 namespace PlatformCore.Services.UI.SplashScreen
 {
-	public interface ISplashScreenService : IService
+	public interface ISplashScreenService
 	{
 		UniTask FadeInAsync(float duration = 1f);
 		UniTask FadeOutAsync(float duration = 1f);

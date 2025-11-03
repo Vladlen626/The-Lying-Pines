@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace _Main.Scripts.Core.Services
 {
-	public interface IInputService : IService
+	public interface IInputService
 	{
 		public event Action OnJumpPressed;
 		public event Action OnJumpReleased;

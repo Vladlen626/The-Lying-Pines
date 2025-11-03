@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace PlatformCore.Services
 {
-	public class SceneService : BaseService, ISceneService
+	public class SceneService : BaseAsyncService, ISceneService
 	{
 		private readonly ILoggerService _loggerService;
 		private Dictionary<string, AsyncOperation> _preloadedScenes = new();
@@ -15,11 +15,6 @@ namespace PlatformCore.Services
 		public SceneService(ILoggerService loggerService)
 		{
 			_loggerService = loggerService;
-		}
-
-		protected override UniTask InitializeServiceAsync()
-		{
-			return UniTask.CompletedTask;
 		}
 
 		public async UniTask PreloadSceneAsync(string sceneName, CancellationToken ct = default)

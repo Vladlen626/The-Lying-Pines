@@ -5,7 +5,7 @@ using FMODUnity;
 
 namespace PlatformCore.Services.Audio
 {
-	public class AudioBaseService : BaseService, IAudioService
+	public class AudioBaseService : IAudioService, IService
 	{
 		private readonly ILoggerService _logger;
 
@@ -20,12 +20,6 @@ namespace PlatformCore.Services.Audio
 		public AudioBaseService(ILoggerService logger)
 		{
 			_logger = logger;
-		}
-
-		protected override UniTask InitializeServiceAsync()
-		{
-			_logger?.Log("[AudioService] Initialized");
-			return UniTask.CompletedTask;
 		}
 
 		public async UniTask PlayMusicAsync(string eventPath, float fadeTime = 1f)
@@ -143,7 +137,7 @@ namespace PlatformCore.Services.Audio
 			}
 		}
 
-		protected override void DisposeService()
+		public void Dispose()
 		{
 			if (_currentMusic.isValid())
 			{

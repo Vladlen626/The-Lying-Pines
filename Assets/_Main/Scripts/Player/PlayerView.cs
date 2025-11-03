@@ -11,7 +11,7 @@ public class PlayerView : MonoBehaviour
 	[SerializeField] private Transform _pickupAttach;
 	[SerializeField] private Animator _animator; 
 	public Transform PickupAttach => _pickupAttach != null ? _pickupAttach : _cameraRoot;
-	
+	public CharacterController Controller => _characterController;
 	public bool IsGrounded => _characterController.isGrounded;
 	public Vector3 Position => transform.position;
 	public Transform CameraRoot => _cameraRoot;
