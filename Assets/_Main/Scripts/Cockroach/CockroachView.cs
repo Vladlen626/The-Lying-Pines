@@ -23,12 +23,16 @@ public class CockroachView : MonoBehaviour
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.GetComponentInParent<PlayerView>())
+		{
 			PlayerEnter?.Invoke();
+		}
 	}
 
 	private void OnTriggerExit(Collider other)
 	{
 		if (other.GetComponentInParent<PlayerView>())
+		{
 			PlayerExit?.Invoke();
+		}
 	}
 }

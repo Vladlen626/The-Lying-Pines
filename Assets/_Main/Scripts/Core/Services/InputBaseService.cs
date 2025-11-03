@@ -9,6 +9,7 @@ namespace _Main.Scripts.Core.Services
 		public event Action OnJumpPressed;
 		public event Action OnJumpReleased;
 		public event Action OnPausePressed;
+		public event Action OnInteractPressed;
 
 		public Vector2 Move { get; private set; }
 		public Vector2 Look { get; private set; }
@@ -73,7 +74,12 @@ namespace _Main.Scripts.Core.Services
 			_actions.Player.Look.performed += ctx => { Look = ctx.ReadValue<Vector2>(); };
 			_actions.Player.Look.canceled += _ => { Look = Vector2.zero; };
 			
-			_actions.Player.Interact.performed += _ => { IsInteract = true; };
+			_actions.Player.Interact.started += _ =>
+			{
+				IsInteract = true;
+				OnInteractPressed?.Invoke();
+			};
+
 			_actions.Player.Interact.canceled += _ => { IsInteract = false; };
 
 			_actions.Player.Jump.started += _ =>

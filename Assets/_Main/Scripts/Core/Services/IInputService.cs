@@ -8,6 +8,7 @@ namespace _Main.Scripts.Core.Services
 		public event Action OnJumpPressed;
 		public event Action OnJumpReleased;
 		public event Action OnPausePressed;
+		public event Action OnInteractPressed;
 		public Vector2 Move { get; }
 		public Vector2 Look { get; }
 

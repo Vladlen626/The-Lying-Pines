@@ -101,6 +101,7 @@ namespace _Main.Scripts.Core
 			if (sceneService.TryGetSceneContext(SceneNames.Hub, out var context1))
 			{
 				playerSpawnPosition = context1.PlayerSpawnPos;
+				await HomeModule.BindFromContext(Lifecycle, Services, context1, defaultCrumbsCost: 50);
 			}
 
 			var playerModel = new PlayerModel();

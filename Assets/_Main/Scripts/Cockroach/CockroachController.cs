@@ -13,6 +13,7 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 	private readonly IInputService _input;
 
 	private bool _inside;
+	private bool _canAfford;
 
 	public CockroachController(CockroachView view, HomeModel home, IInventoryService inventory, IInputService input)
 	{
@@ -24,12 +25,14 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 
 	public void Activate()
 	{
+		_input.OnInteractPressed += OnInteractHandler;
 		_view.PlayerEnter += OnEnter;
 		_view.PlayerExit += OnExit;
 	}
 
 	public void Deactivate()
 	{
+		_input.OnInteractPressed -= OnInteractHandler;
 		_view.PlayerEnter -= OnEnter;
 		_view.PlayerExit -= OnExit;
 		HideTooltip();
@@ -37,26 +40,21 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 
 	public void OnUpdate(float dt)
 	{
-		if (!_inside) return;
+		if (!_inside || _home.State == HomeState.Built)
+		{
+			return;
+		}
 
-		bool canAfford = _home.State == HomeState.Broken &&
-		                 PurchaseUtils.CanAfford(_inventory, _home.Requirements.Costs);
+		_canAfford = _home.State == HomeState.Broken &&
+		             PurchaseUtils.CanAfford(_inventory, _home.Requirements.Costs);
 
 		var tooltip = _view.Tooltip;
 		if (tooltip)
 		{
-			string text = canAfford
+			string text = _canAfford
 				? $"[E] — Give {_home.Requirements.ToShortText()} to build"
 				: PurchaseUtils.MissingText(_inventory, _home.Requirements.Costs);
 			tooltip.SetText(text);
-		}
-
-		if (canAfford && _input.IsInteract)
-		{
-			if (_home.TryBuild(_inventory))
-			{
-				HideTooltip();
-			}
 		}
 	}
 
@@ -85,5 +83,16 @@ public sealed class CockroachController : IBaseController, IActivatable, IUpdata
 	{
 		if (_view.Tooltip)
 			_view.Tooltip.gameObject.SetActive(false);
+	}
+
+	private void OnInteractHandler()
+	{
+		if (_inside && _canAfford)
+		{
+			if (_home.TryBuild(_inventory))
+			{
+				HideTooltip();
+			}
+		}
 	}
 }
