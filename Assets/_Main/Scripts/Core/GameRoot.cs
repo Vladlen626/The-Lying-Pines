@@ -70,6 +70,8 @@ namespace _Main.Scripts.Core
 			input.DisableAllInputs();
 			cursor.UnlockCursor(); 
 			gameModel.SetInMenu(true);
+			await scene.LoadSceneAsync(SceneNames.MainMenu, ApplicationCancellationToken);
+			
 			var settingsController = new SettingsController(Services);
 			var audioController = new AudioController(audio, gameModel);
 			await Lifecycle.RegisterAsync(settingsController);
@@ -83,11 +85,12 @@ namespace _Main.Scripts.Core
 			var mainMenuController = new MainMenuController(Services, settingsController);
 			await Lifecycle.RegisterAsync(mainMenuController);
 			await mainMenuController.WaitForStartAsync();
-			gameModel.SetInMenu(false);
 			await splash.FadeInAsync(0.25f);
+			var unloadSceneTask = scene.UnloadSceneAsync(SceneNames.MainMenu);
 			var sceneTask = scene.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
-			var preloadUiTask = ui.PreloadAsync<UIPlayerCrosshair>().AsTask();
-			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), preloadUiTask.AsUniTask());
+			gameModel.SetInMenu(false);
+			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), unloadSceneTask.AsAsyncUnitUniTask().AsUniTask());
+
 
 			Vector3 spawn = Vector3.zero;
 			var sceneControllers = new List<IBaseController>();
@@ -131,17 +134,17 @@ namespace _Main.Scripts.Core
 			var playerView = await playerViewTask;
 			var gameProgressModel = new GameProgressModel(ctx.Homes.Length);
 
-			sceneControllers.Add(new GameProgressController(gameProgressModel, models.ToArray(), playerView));
+			sceneControllers.Add(new GameProgressController(gameProgressModel, models.ToArray(),
+				playerView, ui, audio));
 			mainControllers.AddRange(sceneControllers);
 			mainControllers.AddRange(playerFactory.GetPlayerBaseControllers(playerModel, playerView));
 
 			await UniTask.WhenAll(mainControllers.Select(c => Lifecycle.RegisterAsync(c)));
 
-			var collectiblesTask = CollectibleModule.BindSceneCollectibles(Lifecycle, inventory, playerView);
+			var collectiblesTask = CollectibleModule.BindSceneCollectibles(Lifecycle, inventory, playerView, audio);
 			var fadeOutTask = splash.FadeOutAsync();
 
 			await UniTask.WhenAll(collectiblesTask, fadeOutTask);
-
 			input.EnableAllInputs();
 			cursor.LockCursor(); 
 		}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{e1e21b75-b7aa-4ec5-bcff-d4eace6c1d22}">
+		<property name="assetPath">
+			<value>African4.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>1.2857142857142858</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{d29ea9f0-0852-4848-be31-5eae5f49058c}</destination>
+		</relationship>
+	</object>
+</objects>

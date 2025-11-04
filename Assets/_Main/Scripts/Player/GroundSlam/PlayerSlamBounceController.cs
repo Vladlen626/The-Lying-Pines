@@ -1,4 +1,5 @@
 ﻿using System;
+using _Main.Scripts.Core;
 using Cysharp.Threading.Tasks;
 using _Main.Scripts.Core.Services;
 using _Main.Scripts.Player;
@@ -112,11 +113,12 @@ namespace _Main.Scripts.Player
 		{
 			_diving = true;
 			_awaitLand = true;
-
+		
 			// стартовый "пинок" вниз для отзывчивости
 			_movement.RequestVerticalOverride(_cfg.DiveDownSpeed);
 
 			// лёгкий стартовый шейк
+			_audio?.PlaySound(AudioEvents.SlamDive);
 			_shake?.ShakeAsync(0.35f, 0.08f).Forget();
 		}
 
@@ -132,13 +134,13 @@ namespace _Main.Scripts.Player
 		{
 			// моментальный фидбек удара
 			_shake?.ShakeAsync(_cfg.ShakeAmp * 0.6f, _cfg.ShakeDur * 0.5f).Forget();
-			if (!string.IsNullOrEmpty(_cfg.AudioImpact))
-				_audio?.PlaySoundAt(_cfg.AudioImpact, _view.Position);
+
 
 			// микро-задержка для "ощущения" удара
 			await UniTask.Delay(TimeSpan.FromSeconds(_cfg.ImpactDelay));
 
 			// ломаем окружение (ящики и т.д.)
+			_audio?.PlaySound(AudioEvents.SlamPunch);
 			DoAreaImpact();
 
 			// ⚠️ теперь ждём, пока реально коснёмся земли

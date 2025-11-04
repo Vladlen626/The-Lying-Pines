@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{7108ca5e-5ad9-4b77-80b0-7130e84fcd5b}">
+		<property name="assetPath">
+			<value>Удары/body_hit_large_32.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.49066666666666664</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{d29ea9f0-0852-4848-be31-5eae5f49058c}</destination>
+		</relationship>
+	</object>
+</objects>

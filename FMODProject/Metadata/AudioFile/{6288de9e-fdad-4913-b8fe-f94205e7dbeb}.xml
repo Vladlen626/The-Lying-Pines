@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{6288de9e-fdad-4913-b8fe-f94205e7dbeb}">
+		<property name="assetPath">
+			<value>Удары/fire_punch_02.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>1.1011458333333333</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{d29ea9f0-0852-4848-be31-5eae5f49058c}</destination>
+		</relationship>
+	</object>
+</objects>

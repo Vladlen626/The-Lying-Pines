@@ -12,7 +12,6 @@ namespace _Main.Scripts.Audio
 		private const string GameplayTheme = "event:/GameplayTheme";
 		private readonly IAudioService _audio;
 		private float _savedMusicVol = 1f;
-		private const float DuckMul = 0.35f; // насколько приглушаем музыку в паузе
 
 		public AudioController(IAudioService audio, GameStateModel gameState)
 		{
@@ -22,8 +21,7 @@ namespace _Main.Scripts.Audio
 
 		public void Activate()
 		{
-			_gameState.GameStateChanged += OnGameStateChanged;
-
+			_gameState.onMenuChanged += OnMenuChangedHandler;
 			// стартуем с меню-темы, если мы сейчас в меню
 			if (_gameState.isInMenu)
 				_audio.PlayMusicAsync(MainMenuTheme, 0.4f).Forget();
@@ -33,26 +31,17 @@ namespace _Main.Scripts.Audio
 
 		public void Deactivate()
 		{
-			_gameState.GameStateChanged -= OnGameStateChanged;
+			_gameState.onMenuChanged -= OnMenuChangedHandler;
 			_audio.StopMusicAsync(0.2f).Forget();
 		}
 
-		private void OnGameStateChanged(bool isInMenu, bool isPaused)
+
+		private void OnMenuChangedHandler(bool isInMenu)
 		{
 			if (isInMenu)
 				_audio.PlayMusicAsync(MainMenuTheme, 0.4f).Forget();
 			else
 				_audio.PlayMusicAsync(GameplayTheme, 0.4f).Forget();
-			
-			if (isPaused)
-			{
-				_savedMusicVol = 1f;
-				_audio.SetMusicVolume(_savedMusicVol * DuckMul);
-			}
-			else
-			{
-				_audio.SetMusicVolume(_savedMusicVol);
-			}
 		}
 	}
 }

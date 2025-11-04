@@ -18,17 +18,17 @@ namespace _Main.Scripts.Global.Controllers
 
 		public void Activate()
 		{
-			_gameStateModel.GameStateChanged += GameStateChangedHandler;
+			_gameStateModel.onPauseChanged += GameStateChangedHandler;
 		}
 
 		public void Deactivate()
 		{
-			_gameStateModel.GameStateChanged -= GameStateChangedHandler;
+			_gameStateModel.onPauseChanged -= GameStateChangedHandler;
 		}
 
-		private void GameStateChangedHandler(bool isInMenu, bool wasPaused)
+		private void GameStateChangedHandler(bool wasPaused)
 		{
-			if (_gameStateModel.isPaused || isInMenu)
+			if (wasPaused)
 			{
 				_inputService.DisablePlayerInputs();
 			}

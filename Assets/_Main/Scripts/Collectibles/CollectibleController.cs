@@ -1,10 +1,12 @@
 ﻿// CollectibleController.cs
 
 using System;
+using _Main.Scripts.Core;
 using PlatformCore.Infrastructure.Lifecycle;
 using _Main.Scripts.Inventory;
 using _Main.Scripts.Player;
 using PlatformCore.Core;
+using PlatformCore.Services.Audio;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -21,6 +23,7 @@ namespace _Main.Scripts.Collectibles
 
 		private readonly CollectibleView _view;
 		private readonly IInventoryService _inventory;
+		private readonly IAudioService _audioService;
 		private readonly IAnchor _target;
 
 		// Idle (затухают возле игрока)
@@ -60,11 +63,12 @@ namespace _Main.Scripts.Collectibles
 		private Vector3 _flySide; // боковая ось для синуса
 		private float _wobblePhase; // фаза синуса
 
-		public CollectibleController(CollectibleView view, IInventoryService inventory, IAnchor target)
+		public CollectibleController(CollectibleView view, IInventoryService inventory, IAnchor target, IAudioService audioService)
 		{
 			_view = view ?? throw new ArgumentNullException(nameof(view));
 			_inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
 			_target = target ?? throw new ArgumentNullException(nameof(target));
+			_audioService = audioService;
 		}
 
 		public void Activate()
@@ -195,6 +199,7 @@ namespace _Main.Scripts.Collectibles
 			float d = Vector3.Distance(target, pos);
 			if (d <= EndShrinkDist)
 			{
+				_audioService.PlaySound(AudioEvents.GetCrumb);
 				_view.PlayFx(_target.Position);
 				float shrinkK = Mathf.InverseLerp(EndShrinkDist, 0f, d);
 				float scale = Mathf.Lerp(1f, EndShrinkMin, Smooth01(shrinkK));

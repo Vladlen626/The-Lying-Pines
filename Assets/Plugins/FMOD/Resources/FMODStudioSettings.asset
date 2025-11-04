@@ -563,6 +563,7 @@ MonoBehaviour:
   - Master
   Banks:
   - Background
+  - SFX
   BanksToLoad: []
   LiveUpdatePort: 9264
   EnableMemoryTracking: 0

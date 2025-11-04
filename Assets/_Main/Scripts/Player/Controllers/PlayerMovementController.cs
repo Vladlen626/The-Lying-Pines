@@ -1,7 +1,9 @@
-﻿using _Main.Scripts.Core.Services;
+﻿using _Main.Scripts.Core;
+using _Main.Scripts.Core.Services;
 using PlatformCore.Core;
 using PlatformCore.Infrastructure.Lifecycle;
 using PlatformCore.Services;
+using PlatformCore.Services.Audio;
 using UnityEngine;
 
 namespace _Main.Scripts.Player
@@ -9,6 +11,7 @@ namespace _Main.Scripts.Player
 	public class PlayerMovementController : IBaseController, IUpdatable
 	{
 		private readonly IInputService _inputService;
+		private readonly IAudioService _audioService;
 		private readonly PlayerModel _playerModel;
 		private readonly PlayerView _playerView;
 		private readonly Transform _cameraTransform;
@@ -30,9 +33,10 @@ namespace _Main.Scripts.Player
 
 
 		public PlayerMovementController(IInputService inputService, PlayerModel playerModel, PlayerView playerView,
-			Transform cameraTransform)
+			Transform cameraTransform, IAudioService audioService)
 		{
 			_inputService = inputService;
+			_audioService = audioService;
 			_playerModel = playerModel;
 			_playerView = playerView;
 			_cameraTransform = cameraTransform;
@@ -114,6 +118,7 @@ namespace _Main.Scripts.Player
 				_coyoteTimer = 0f;
 				_verticalY = Mathf.Sqrt(_playerModel.jumpHeight * -2f * _playerModel.gravity) * 1.1f;
 				_velXZ += desiredDir.normalized * 2f;
+				_audioService.PlaySound(AudioEvents.Jump);
 				_isGrounded = false;
 			}
 

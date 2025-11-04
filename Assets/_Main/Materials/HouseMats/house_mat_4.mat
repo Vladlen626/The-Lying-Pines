@@ -45,13 +45,13 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Shadows_Contrast: 1
-    - _Shadows_Size: 0.6
+    - _Shadows_Size: 1
     m_Colors:
-    - _Base_Color: {r: 0.6698113, g: 0.5565026, b: 0.42653078, a: 0}
+    - _Base_Color: {r: 0.6509434, g: 0.6121839, b: 0.5557583, a: 0}
     - _HighlightColor: {r: 1, g: 1, b: 1, a: 0}
     - _Highlight_Color: {r: 1, g: 0.6156863, b: 0, a: 0}
     - _Outline_Color: {r: 0.122641504, g: 0.122641504, b: 0.122641504, a: 1}
-    - _Shadows_Color: {r: 0.40392157, g: 0.25086904, b: 0.14509806, a: 0}
+    - _Shadows_Color: {r: 0.33962262, g: 0.31974334, b: 0.30598074, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &7523208459516627033

@@ -181,6 +181,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: House_build_proccess
       objectReference: {fileID: 0}
+    - target: {fileID: 8487402871801164198, guid: ec3add068ba719343a8efc22de813af9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using PlatformCore.Infrastructure.Lifecycle;
 using _Main.Scripts.Inventory;
 using _Main.Scripts.Player;
+using PlatformCore.Services.Audio;
 using UnityEngine;
 
 namespace _Main.Scripts.Collectibles
@@ -13,7 +14,8 @@ namespace _Main.Scripts.Collectibles
 		public static async UniTask BindSceneCollectibles(
 			LifecycleManager lifecycle,
 			IInventoryService inventory,
-			PlayerView playerView)
+			PlayerView playerView,
+			IAudioService audio)
 		{
 			if (!playerView) return;
 
@@ -22,7 +24,7 @@ namespace _Main.Scripts.Collectibles
 
 			foreach (var v in views.Where(v => v != null && v.gameObject.activeInHierarchy))
 			{
-				var c = new CollectibleController(v, inventory, anchor);
+				var c = new CollectibleController(v, inventory, anchor, audio);
 				await lifecycle.RegisterAsync(c);
 			}
 		}

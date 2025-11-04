@@ -39,14 +39,15 @@ namespace _Main.Scripts.Player
 		{
 			var inputService = _serviceLocator.Get<IInputService>();
 			var cameraService = _serviceLocator.Get<ICameraService>();
+			var audioService = _serviceLocator.Get<IAudioService>();
 			var playerMovementController = new PlayerMovementController(inputService, playerModel, playerView,
-				cameraService.GetCameraTransform());
+				cameraService.GetCameraTransform(), audioService);
 			
 			return new IBaseController[]
 			{
 				playerMovementController,
 				new PlayerSlamBounceController(inputService, playerMovementController, playerView,
-					_serviceLocator.Get<ICameraShakeService>(), playerModel,_serviceLocator.Get<IAudioService>()),
+					_serviceLocator.Get<ICameraShakeService>(), playerModel,audioService),
 				new PlayerCameraController(_serviceLocator, playerView),
 				new PlayerAnimationController(inputService, playerModel, playerView),
 				new PlayerJuiceController(playerView),
