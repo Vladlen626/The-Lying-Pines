@@ -41,7 +41,7 @@ Material:
     - _Glow_Size: 0
     - _Highlight_Intensity: 0
     - _Highlight_Size: 0
-    - _Outline_Size: -1
+    - _Outline_Size: 0.2
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Shadows_Contrast: 1

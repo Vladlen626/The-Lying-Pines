@@ -36,10 +36,10 @@ public class PauseController : IBaseController, IActivatable
 	{
 		if (_gameStateModel.isPaused) return;
 
-		_gameStateModel.isPaused = true;
+		_gameStateModel.SetPaused(true);
 		
 		await _settingsWindow.ShowInGameAsync();
 
-		_gameStateModel.isPaused = false;
+		_gameStateModel.SetPaused(false);
 	}
 }

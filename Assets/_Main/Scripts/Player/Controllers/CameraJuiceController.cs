@@ -9,7 +9,6 @@ namespace _Main.Scripts.CameraFX
 	{
 		private readonly ICameraService _cam;
 		private readonly Transform _follow;
-		private readonly Transform _cameraTransform;
 
 		// Настройки
 		private readonly float _baseFov = 60f;
@@ -32,7 +31,6 @@ namespace _Main.Scripts.CameraFX
 		{
 			_cam = cameraService;
 			_follow = followTarget;
-			_cameraTransform = cameraService.GetCameraTransform();
 			_lastFollowPos = followTarget ? followTarget.position : Vector3.zero;
 			_currentFov = Mathf.Approximately(_cam.GetFOV(), 0f) ? _baseFov : _cam.GetFOV();
 			var fwd = Camera.main ? Camera.main.transform.forward : Vector3.forward;

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace _Main.Scripts.Home
 {
@@ -7,6 +8,7 @@ namespace _Main.Scripts.Home
 		[SerializeField] private GameObject _broken;
 		[SerializeField] private GameObject _built;
 
+		
 		public void SetState(HomeState state)
 		{
 			if (_broken)

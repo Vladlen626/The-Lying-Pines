@@ -66,25 +66,25 @@ namespace _Main.Scripts.Core
 			var timelineService = Services.Get<ITimelineService>();
 			var ui = Services.Get<IUIService>();
 			var cursor = Services.Get<ICursorService>();
-
-			input.DisableAllInputs();
-			splash.FadeInAsync(0).Forget();
-
-			var settingsController = new SettingsController(Services);
-
-			await ui.PreloadAsync<UICreditsSplash>();
-			await ui.ShowAsync<UICreditsSplash>();
-			var credits = ui.Get<UICreditsSplash>();
-			credits.SetText("created by \"the pair\"");
-			await credits.PlayAsync();
-			await ui.HideAsync<UICreditsSplash>();
 			
+			input.DisableAllInputs();
 			cursor.UnlockCursor(); 
+			gameModel.SetInMenu(true);
+			var settingsController = new SettingsController(Services);
+			var audioController = new AudioController(audio, gameModel);
+			await Lifecycle.RegisterAsync(settingsController);
+			await Lifecycle.RegisterAsync(audioController);
+			
+			await ui.PreloadAsync<UICreditsSplash>();
+			await ui.ShowAsync<UICreditsSplash>(0.3f);
+			await UniTask.Delay(3200);
+			await ui.HideAsync<UICreditsSplash>(0.25f);
 
 			var mainMenuController = new MainMenuController(Services, settingsController);
 			await Lifecycle.RegisterAsync(mainMenuController);
 			await mainMenuController.WaitForStartAsync();
-
+			gameModel.SetInMenu(false);
+			await splash.FadeInAsync(0.25f);
 			var sceneTask = scene.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
 			var preloadUiTask = ui.PreloadAsync<UIPlayerCrosshair>().AsTask();
 			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), preloadUiTask.AsUniTask());
@@ -125,7 +125,6 @@ namespace _Main.Scripts.Core
 				settingsController,
 				new PauseController(gameModel, Services, settingsController),
 				new GameStateController(gameModel, input),
-				new AudioController(audio),
 				new PlayerHudController(inventory, ui)
 			};
 

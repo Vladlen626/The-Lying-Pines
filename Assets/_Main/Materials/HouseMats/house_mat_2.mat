@@ -41,11 +41,11 @@ Material:
     - _Glow_Size: 0
     - _Highlight_Intensity: 0
     - _Highlight_Size: 0
-    - _Outline_Size: 0.1
+    - _Outline_Size: 0.2
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Shadows_Contrast: 1
-    - _Shadows_Size: 0
+    - _Shadows_Size: 0.64
     m_Colors:
     - _Base_Color: {r: 0.6509434, g: 0.5465468, b: 0.4267978, a: 0}
     - _HighlightColor: {r: 1, g: 1, b: 1, a: 0}

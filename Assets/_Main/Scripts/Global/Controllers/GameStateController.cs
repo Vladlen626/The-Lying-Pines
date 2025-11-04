@@ -26,9 +26,9 @@ namespace _Main.Scripts.Global.Controllers
 			_gameStateModel.GameStateChanged -= GameStateChangedHandler;
 		}
 
-		private void GameStateChangedHandler()
+		private void GameStateChangedHandler(bool isInMenu, bool wasPaused)
 		{
-			if (_gameStateModel.isPaused)
+			if (_gameStateModel.isPaused || isInMenu)
 			{
 				_inputService.DisablePlayerInputs();
 			}

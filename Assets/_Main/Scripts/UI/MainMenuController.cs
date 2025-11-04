@@ -32,7 +32,7 @@ namespace _Main.Scripts.UI
 			_menu.OnStartClicked += HandleStart;
 			_menu.OnSettingsClicked += HandleSettings;
 
-			_ui.ShowAsync<UIMainMenu>().Forget();
+			_ui.ShowAsync<UIMainMenu>(0.15f).Forget();
 		}
 
 		public void Deactivate()

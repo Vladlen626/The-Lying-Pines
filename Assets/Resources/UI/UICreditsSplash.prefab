@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7213390483837021011}
   - component: {fileID: 5089125921639085364}
   - component: {fileID: 7193074510941101349}
+  - component: {fileID: 5452409487060177722}
   m_Layer: 0
   m_Name: UICreditsSplash
   m_TagString: Untagged
@@ -50,7 +51,7 @@ CanvasGroup:
   m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
+  m_IgnoreParentGroups: 1
 --- !u!114 &7193074510941101349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66,10 +67,20 @@ MonoBehaviour:
   _canvasType: 1
   _group: {fileID: 5089125921639085364}
   _label: {fileID: 7403319311074594402}
-  _text: created by "the pair"
-  _typeDuration: 0.9
-  _postHold: 0.2
-  _autoplayOnShow: 1
+--- !u!114 &5452409487060177722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739473055704406316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2beb3818f3a4abdbbcb357a7173a89d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MainGame::UILayerOnTop
+  sortingOrder: 6000
+  screenSpaceOverlay: 1
 --- !u!1 &897988385397227435
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,6 +167,7 @@ GameObject:
   - component: {fileID: 3634393584264842152}
   - component: {fileID: 8129024365676143663}
   - component: {fileID: 7403319311074594402}
+  - component: {fileID: 1598741175887205899}
   m_Layer: 0
   m_Name: Title
   m_TagString: Untagged
@@ -281,3 +293,66 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1598741175887205899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7902842149567194473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cf9594e2a3b8eb4eaf3cc57f263076f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TMPEffects::TMPEffects.Components.TMPWriter
+  OnTextEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCharacterShown:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStartWriter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStopWriter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnWaitStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnWaitEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFinishWriter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSkipWriter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnResetWriter:
+    m_PersistentCalls:
+      m_Calls: []
+  keywordDatabase: {fileID: 0}
+  sceneKeywordDatabase: {fileID: 0}
+  database: {fileID: 11400000, guid: 290ad04254a96934aa269d5b8d258008, type: 2}
+  maySkip: 1
+  writeOnStart: 1
+  writeOnNewText: 1
+  useScaledTime: 1
+  delays:
+    delay: 0.08
+    whitespaceDelay: 0.15
+    whitespaceDelayType: 0
+    linebreakDelay: 0
+    linebreakDelayType: 0
+    punctuationDelay: 0
+    punctuationDelayType: 0
+    visibleDelay: 0
+    visibleDelayType: 0
+  sceneCommands:
+    _serializedList: []
+  useDefaultDatabase: 1
+  useDefaultKeywordDatabase: 0
+  initDatabase: 1
+  eventsEnabled: 0
+  commandsEnabled: 1
