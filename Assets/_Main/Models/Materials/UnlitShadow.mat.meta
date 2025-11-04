@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 311082
   packageName: Cartoon Shader
   packageVersion: 1.0
-  assetPath: Assets/Plugins/Cartoon Shader/Demo/Materials/UnlitShadow.mat
+  assetPath: Assets/_Main/Models/Materials/UnlitShadow.mat
   uploadId: 734019

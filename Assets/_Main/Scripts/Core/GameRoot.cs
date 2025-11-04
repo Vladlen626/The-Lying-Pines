@@ -66,21 +66,31 @@ namespace _Main.Scripts.Core
 			var timelineService = Services.Get<ITimelineService>();
 			var ui = Services.Get<IUIService>();
 			var cursor = Services.Get<ICursorService>();
-			
+
 			input.DisableAllInputs();
-			cursor.UnlockCursor(); 
+			cursor.UnlockCursor();
+			FMODUnity.RuntimeManager.LoadBank("Master.strings", true);
+			FMODUnity.RuntimeManager.LoadBank("Master", true);
+			FMODUnity.RuntimeManager.LoadBank("Background", true);
+			FMODUnity.RuntimeManager.LoadBank("SFX", true);
+
 			gameModel.SetInMenu(true);
+			await splash.FadeInAsync(0f);
 			await scene.LoadSceneAsync(SceneNames.MainMenu, ApplicationCancellationToken);
+			await UniTask.WaitUntil(() => FMODUnity.RuntimeManager.IsInitialized);
+			await UniTask.Delay(300);
 			
+			await ui.PreloadAsync<UICreditsSplash>();
+			var splashScreen = await ui.ShowAsync<UICreditsSplash>(0.3f);
+			await splashScreen.WaitForClickAsync(); 
+			try { FMODUnity.RuntimeManager.CoreSystem.mixerResume(); } catch { }
+			
+			await ui.HideAsync<UICreditsSplash>(0.25f);
+			await splash.FadeOutAsync(0f);
 			var settingsController = new SettingsController(Services);
 			var audioController = new AudioController(audio, gameModel);
 			await Lifecycle.RegisterAsync(settingsController);
 			await Lifecycle.RegisterAsync(audioController);
-			
-			await ui.PreloadAsync<UICreditsSplash>();
-			await ui.ShowAsync<UICreditsSplash>(0.3f);
-			await UniTask.Delay(3200);
-			await ui.HideAsync<UICreditsSplash>(0.25f);
 
 			var mainMenuController = new MainMenuController(Services, settingsController);
 			await Lifecycle.RegisterAsync(mainMenuController);
@@ -89,7 +99,7 @@ namespace _Main.Scripts.Core
 			var unloadSceneTask = scene.UnloadSceneAsync(SceneNames.MainMenu);
 			var sceneTask = scene.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
 			gameModel.SetInMenu(false);
-			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), unloadSceneTask.AsAsyncUnitUniTask().AsUniTask());
+			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask(), unloadSceneTask.AsAsyncUnitUniTask());
 
 
 			Vector3 spawn = Vector3.zero;
@@ -146,7 +156,7 @@ namespace _Main.Scripts.Core
 
 			await UniTask.WhenAll(collectiblesTask, fadeOutTask);
 			input.EnableAllInputs();
-			cursor.LockCursor(); 
+			cursor.LockCursor();
 		}
 	}
 }

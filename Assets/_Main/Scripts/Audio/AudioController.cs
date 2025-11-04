@@ -13,6 +13,8 @@ namespace _Main.Scripts.Audio
 		private readonly IAudioService _audio;
 		private float _savedMusicVol = 1f;
 
+		private string _currentTheme;
+		private bool _alive;
 		public AudioController(IAudioService audio, GameStateModel gameState)
 		{
 			_audio = audio;
@@ -21,27 +23,36 @@ namespace _Main.Scripts.Audio
 
 		public void Activate()
 		{
-			_gameState.onMenuChanged += OnMenuChangedHandler;
-			// стартуем с меню-темы, если мы сейчас в меню
-			if (_gameState.isInMenu)
-				_audio.PlayMusicAsync(MainMenuTheme, 0.4f).Forget();
-			else
-				_audio.PlayMusicAsync(GameplayTheme, 0.4f).Forget();
+			_alive = true;
+			_gameState.onMenuChanged += OnMenuChanged;
+			
+			PlayDeferred(_gameState.isInMenu ? MainMenuTheme : GameplayTheme, 1f).Forget();
 		}
 
 		public void Deactivate()
 		{
-			_gameState.onMenuChanged -= OnMenuChangedHandler;
+			_gameState.onMenuChanged -= OnMenuChanged;
 			_audio.StopMusicAsync(0.2f).Forget();
 		}
 
-
-		private void OnMenuChangedHandler(bool isInMenu)
+		private async UniTaskVoid PlayDeferred(string theme, float fade)
 		{
-			if (isInMenu)
-				_audio.PlayMusicAsync(MainMenuTheme, 0.4f).Forget();
-			else
-				_audio.PlayMusicAsync(GameplayTheme, 0.4f).Forget();
+			await UniTask.Yield();
+			if (!_alive) return;
+			SwitchTo(theme, fade);
+		}
+		
+		private void OnMenuChanged(bool isInMenu)
+		{
+			SwitchTo(isInMenu ? MainMenuTheme : GameplayTheme, 0.35f);
+		}
+		
+		private void SwitchTo(string theme, float fade)
+		{
+			if (!_alive) return;
+			if (_currentTheme == theme) return;          // не перезапускаем ту же тему
+			_currentTheme = theme;
+			_audio.PlayMusicAsync(theme, fade).Forget(); // твой сервис сам стопает предыдущее
 		}
 	}
 }

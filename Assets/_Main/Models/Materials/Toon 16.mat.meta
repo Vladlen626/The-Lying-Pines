@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 98674c78bf6418945a67ac60da4221f8
+guid: 78baac27db3e62440bdd60fe8c6a61de
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 311082
   packageName: Cartoon Shader
   packageVersion: 1.0
-  assetPath: Assets/_Main/Models/Materials/Toon 7.mat
+  assetPath: Assets/_Main/Models/Materials/Toon 16.mat
   uploadId: 734019
