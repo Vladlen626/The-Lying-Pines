@@ -67,8 +67,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfe420cb5fae4e56a6ea473278e160a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MainGame::_Main.Scripts.Collectibles.CrumbView
-  Kind: 1
-  Amount: 1
+  Kind: 0
+  Amount: 5
   _visual: {fileID: 5739710391406957462}
   _magnetRadius: 3
   _contactRadius: 0.25

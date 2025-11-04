@@ -50,7 +50,7 @@ namespace _Main.Scripts.Player
 			public LayerMask ImpactMask = 1 << LayerMask.NameToLayer("Destructible");
 			public float ImpactDelay = 0.03f; // микро-лаг до нанесения урона/FX
 
-			public float AfterImpactCooldown = 0.12f; // прежде чем можно снова жать E
+			public float AfterImpactCooldown = 0.5f; // прежде чем можно снова жать E
 			public float SuppressJumpTime = 0.15f; // глушим обычный Space вокруг удара
 
 			public float ForwardBoost = 5.5f; // горизонтальный толчок вперёд при отскоке

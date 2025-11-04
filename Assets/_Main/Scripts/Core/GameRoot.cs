@@ -76,11 +76,12 @@ namespace _Main.Scripts.Core
 
 			Vector3 spawn = Vector3.zero;
 			var sceneControllers = new List<IBaseController>();
+			var models = new List<HomeModel>();
 			if (scene.TryGetSceneContext(SceneNames.Hub, out var ctx))
 			{
 				// SETUP SCENE CONTEXT
 				spawn = ctx.PlayerSpawnPos;
-				var models = new List<HomeModel>();
+				
 				foreach (var slot in ctx.Homes)
 				{
 					if (!slot.Home) continue;
@@ -97,9 +98,6 @@ namespace _Main.Scripts.Core
 						sceneControllers.Add(new CockroachController(slot.Builder, model, inventory, input));
 					}
 				}
-
-				var gameProgressModel = new GameProgressModel(ctx.Homes.Length);
-				sceneControllers.Add(new GameProgressController(gameProgressModel, models.ToArray()));
 				
 				timelineService.SetTimelineDirectors(ctx.HomeTimeLines, ctx.GameStartDirector, ctx.GameEndDirector);
 			}
@@ -113,11 +111,14 @@ namespace _Main.Scripts.Core
 				new PauseController(gameModel, Services),
 				new GameStateController(gameModel, input),
 				new AudioController(audio),
+				new PlayerHudController(inventory, Services.Get<IUIService>())
 			};
 
-			mainControllers.AddRange(sceneControllers);
-
 			var playerView = await playerViewTask;
+			var gameProgressModel = new GameProgressModel(ctx.Homes.Length);
+
+			sceneControllers.Add(new GameProgressController(gameProgressModel, models.ToArray(), playerView));
+			mainControllers.AddRange(sceneControllers);			
 			mainControllers.AddRange(playerFactory.GetPlayerBaseControllers(playerModel, playerView));
 
 			await UniTask.WhenAll(mainControllers.Select(c => Lifecycle.RegisterAsync(c)));

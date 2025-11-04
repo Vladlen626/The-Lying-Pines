@@ -12,6 +12,7 @@ public class PlayerView : MonoBehaviour
 	[SerializeField] private Transform _pickupAttach;
 	[SerializeField] private Animator _animator;
 	[SerializeField] private GameObject _slamFx;
+	[SerializeField] private GameObject _cigar;
 	public Transform PickupAttach => _pickupAttach != null ? _pickupAttach : _cameraRoot;
 	public CharacterController Controller => _characterController;
 	public bool IsGrounded => _characterController.isGrounded;
@@ -22,6 +23,11 @@ public class PlayerView : MonoBehaviour
 	public Animator Animator => _animator;
 	public event Action OnLand;
 	private bool _wasGrounded;
+
+	private void Awake()
+	{
+		_cigar.SetActive(false);
+	}
 
 	private void Update()
 	{
@@ -59,5 +65,10 @@ public class PlayerView : MonoBehaviour
 	public void PlaySlamFx()
 	{
 		Instantiate(_slamFx, _playerTransform.position, Quaternion.Euler(-90, 0, 0));
+	}
+	
+	public void ShowCigar()
+	{
+		_cigar.SetActive(true);
 	}
 }

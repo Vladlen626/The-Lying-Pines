@@ -54,6 +54,7 @@ MonoBehaviour:
   _pickupAttach: {fileID: 6481125552502877899}
   _animator: {fileID: 3680816188755162215}
   _slamFx: {fileID: 3432958286849152088, guid: 52b6a646c7d29e043887a33fc4a66136, type: 3}
+  _cigar: {fileID: 5762814248032114094}
 --- !u!143 &6674581506054378922
 CharacterController:
   m_ObjectHideFlags: 0
@@ -823,5 +824,10 @@ PrefabInstance:
 --- !u!4 &4950143916368449300 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1137323456836319902, guid: 16e6117fb68856741899b7d2d12acf2e, type: 3}
+  m_PrefabInstance: {fileID: 5438910198406280586}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5762814248032114094 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 325179485437747236, guid: 16e6117fb68856741899b7d2d12acf2e, type: 3}
   m_PrefabInstance: {fileID: 5438910198406280586}
   m_PrefabAsset: {fileID: 0}

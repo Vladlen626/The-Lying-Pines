@@ -21,7 +21,7 @@ public class TooltipWorldView : MonoBehaviour
 
 	public void SetText(string text)
 	{
-		if (_label != null)
+		if (_label)
 		{ 
 			_label.text = text;
 		}

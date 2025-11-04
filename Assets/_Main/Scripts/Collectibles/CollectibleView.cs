@@ -67,7 +67,7 @@ namespace _Main.Scripts.Collectibles
 			else transform.localScale = _baseScale;
 		}
 
-		public void PlayFx()
+		public void PlayFx(Vector3 position)
 		{
 			Instantiate(collectibleFx, _visual.position, Quaternion.identity);
 		}

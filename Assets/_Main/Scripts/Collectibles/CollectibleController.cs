@@ -212,7 +212,7 @@ namespace _Main.Scripts.Collectibles
 			if (_state == State.Collected) return;
 			_state = State.Collected;
 			_inventory.Add(_view.Kind, _view.Amount);
-			_view.PlayFx();
+			_view.PlayFx(_target.Position);
 			_view.DestroySelf();
 		}
 

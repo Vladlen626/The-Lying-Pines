@@ -9,11 +9,13 @@ namespace _Main.Scripts
 	{
 		private readonly GameProgressModel _model;
 		private readonly HomeModel[] _homes;
+		private readonly PlayerView _playerView;
 
-		public GameProgressController(GameProgressModel model, params HomeModel[] homes)
+		public GameProgressController(GameProgressModel model, HomeModel[] homes, PlayerView playerView)
 		{
 			_model = model;
 			_homes = homes;
+			_playerView = playerView;
 		}
 
 		public void Activate()
@@ -38,7 +40,7 @@ namespace _Main.Scripts
 			_model.MarkBuilt();
 			if (_model.Completed)
 			{
-				Debug.Log("YOU WIN");
+				_playerView.ShowCigar();
 			}
 		}
 	}
