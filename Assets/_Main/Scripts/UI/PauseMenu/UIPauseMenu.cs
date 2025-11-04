@@ -3,71 +3,47 @@ using PlatformCore.Services.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIPauseMenu : BaseUIElement
+public class UISettingsAudio : BaseUIElement
 {
-	public event Action OnResumeClicked;
+	[SerializeField] private CanvasGroup _group;
+	[Header("Controls")] [SerializeField] private Slider _master;
+	[SerializeField] private Slider _music;
+	[SerializeField] private Slider _sfx;
+	[SerializeField] private Button _close;
 
-	[SerializeField] private CanvasGroup _canvasGroup;
-
-	[SerializeField] private Slider _masterSlider;
-	[SerializeField] private Slider _musicSlider;
-	[SerializeField] private Slider _sfxSlider;
-	[SerializeField] private Toggle _fullscreenToggle;
-	[SerializeField] private Button _quitButton;
-
-	// события — view ничего не знает о логике
 	public event Action<float> OnMasterChanged;
 	public event Action<float> OnMusicChanged;
 	public event Action<float> OnSfxChanged;
-	public event Action<bool> OnMuteChanged;
-	public event Action<bool> OnFullscreenChanged;
-	public event Action OnQuitClicked;
+	public event Action OnCloseClicked;
 
 	private void Awake()
 	{
-		_masterSlider.onValueChanged.AddListener(v => OnMasterChanged?.Invoke(v));
-		_musicSlider.onValueChanged.AddListener(v => OnMusicChanged?.Invoke(v));
-		_sfxSlider.onValueChanged.AddListener(v => OnSfxChanged?.Invoke(v));
-		_fullscreenToggle.onValueChanged.AddListener(v => OnFullscreenChanged?.Invoke(v));
-		_quitButton.onClick.AddListener(() => OnQuitClicked?.Invoke());
+		_master.onValueChanged.AddListener(v => OnMasterChanged?.Invoke(v));
+		_music.onValueChanged.AddListener(v => OnMusicChanged?.Invoke(v));
+		_sfx.onValueChanged.AddListener(v => OnSfxChanged?.Invoke(v));
+		_close.onClick.AddListener(() => OnCloseClicked?.Invoke());
 	}
 
 	public override void OnShow()
 	{
-		_canvasGroup.alpha = 1;
-		_canvasGroup.interactable = true;
-		_canvasGroup.blocksRaycasts = true;
+		if (!_group) return;
+		_group.alpha = 1;
+		_group.interactable = true;
+		_group.blocksRaycasts = true;
 	}
 
 	public override void OnHide()
 	{
-		_canvasGroup.alpha = 0;
-		_canvasGroup.interactable = false;
-		_canvasGroup.blocksRaycasts = false;
+		if (!_group) return;
+		_group.alpha = 0;
+		_group.interactable = false;
+		_group.blocksRaycasts = false;
 	}
 
-	// контроллер сам может сеттить начальные значения
 	public void SetValues(float master, float music, float sfx, bool mute, bool fullscreen)
 	{
-		_masterSlider.SetValueWithoutNotify(master);
-		_musicSlider.SetValueWithoutNotify(music);
-		_sfxSlider.SetValueWithoutNotify(sfx);
-		_fullscreenToggle.SetIsOnWithoutNotify(fullscreen);
-	}
-	
-	public void ClearListeners()
-	{
-		OnMasterChanged = null;
-		OnMusicChanged = null;
-		OnSfxChanged = null;
-		OnMuteChanged = null;
-		OnFullscreenChanged = null;
-		OnQuitClicked = null;
-	}
-
-
-	public void OnResumeClick()
-	{
-		OnResumeClicked?.Invoke();
+		_master.SetValueWithoutNotify(master);
+		_music.SetValueWithoutNotify(music);
+		_sfx.SetValueWithoutNotify(sfx);
 	}
 }

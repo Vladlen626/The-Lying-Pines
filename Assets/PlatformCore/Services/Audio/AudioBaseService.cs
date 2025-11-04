@@ -10,9 +10,9 @@ namespace PlatformCore.Services.Audio
 		private readonly ILoggerService _logger;
 
 		private FMOD.Studio.EventInstance _currentMusic;
-		private float _masterVolume = 1f;
-		private float _musicVolume = 1f;
-		private float _sfxVolume = 1f;
+		private float _masterVolume = 0.5f;
+		private float _musicVolume = 0.5f;
+		private float _sfxVolume = 0.5f;
 		private bool _isMuted = false;
 
 		public bool IsMuted => _isMuted;

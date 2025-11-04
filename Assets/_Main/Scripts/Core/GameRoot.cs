@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading;
 using _Main.Scripts.Audio;
 using _Main.Scripts.Collectibles;
 using _Main.Scripts.Core.Services;
@@ -17,7 +16,6 @@ using PlatformCore.Services.Factory;
 using PlatformCore.Services.UI;
 using PlatformCore.Services.UI.SplashScreen;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace _Main.Scripts.Core
 {
@@ -66,12 +64,29 @@ namespace _Main.Scripts.Core
 			var inventory = Services.Get<IInventoryService>();
 			var audio = Services.Get<IAudioService>();
 			var timelineService = Services.Get<ITimelineService>();
+			var ui = Services.Get<IUIService>();
+			var cursor = Services.Get<ICursorService>();
 
 			input.DisableAllInputs();
 			splash.FadeInAsync(0).Forget();
 
+			var settingsController = new SettingsController(Services);
+
+			await ui.PreloadAsync<UICreditsSplash>();
+			await ui.ShowAsync<UICreditsSplash>();
+			var credits = ui.Get<UICreditsSplash>();
+			credits.SetText("created by \"the pair\"");
+			await credits.PlayAsync();
+			await ui.HideAsync<UICreditsSplash>();
+			
+			cursor.UnlockCursor(); 
+
+			var mainMenuController = new MainMenuController(Services, settingsController);
+			await Lifecycle.RegisterAsync(mainMenuController);
+			await mainMenuController.WaitForStartAsync();
+
 			var sceneTask = scene.LoadSceneAsync(SceneNames.Hub, ApplicationCancellationToken);
-			var preloadUiTask = Services.Get<IUIService>().PreloadAsync<UIPlayerCrosshair>().AsTask();
+			var preloadUiTask = ui.PreloadAsync<UIPlayerCrosshair>().AsTask();
 			await UniTask.WhenAll(sceneTask.AsAsyncUnitUniTask().AsUniTask(), preloadUiTask.AsUniTask());
 
 			Vector3 spawn = Vector3.zero;
@@ -81,7 +96,7 @@ namespace _Main.Scripts.Core
 			{
 				// SETUP SCENE CONTEXT
 				spawn = ctx.PlayerSpawnPos;
-				
+
 				foreach (var slot in ctx.Homes)
 				{
 					if (!slot.Home) continue;
@@ -98,27 +113,27 @@ namespace _Main.Scripts.Core
 						sceneControllers.Add(new CockroachController(slot.Builder, model, inventory, input));
 					}
 				}
-				
+
 				timelineService.SetTimelineDirectors(ctx.HomeTimeLines, ctx.GameStartDirector, ctx.GameEndDirector);
 			}
 
 			var playerFactory = new PlayerFactory(Services);
 			var playerModel = new PlayerModel();
 			var playerViewTask = playerFactory.CreatePlayerView(spawn);
-
 			var mainControllers = new List<IBaseController>
 			{
-				new PauseController(gameModel, Services),
+				settingsController,
+				new PauseController(gameModel, Services, settingsController),
 				new GameStateController(gameModel, input),
 				new AudioController(audio),
-				new PlayerHudController(inventory, Services.Get<IUIService>())
+				new PlayerHudController(inventory, ui)
 			};
 
 			var playerView = await playerViewTask;
 			var gameProgressModel = new GameProgressModel(ctx.Homes.Length);
 
 			sceneControllers.Add(new GameProgressController(gameProgressModel, models.ToArray(), playerView));
-			mainControllers.AddRange(sceneControllers);			
+			mainControllers.AddRange(sceneControllers);
 			mainControllers.AddRange(playerFactory.GetPlayerBaseControllers(playerModel, playerView));
 
 			await UniTask.WhenAll(mainControllers.Select(c => Lifecycle.RegisterAsync(c)));
@@ -129,6 +144,7 @@ namespace _Main.Scripts.Core
 			await UniTask.WhenAll(collectiblesTask, fadeOutTask);
 
 			input.EnableAllInputs();
+			cursor.LockCursor(); 
 		}
 	}
 }

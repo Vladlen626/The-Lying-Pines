@@ -195,6 +195,7 @@ namespace _Main.Scripts.Collectibles
 			float d = Vector3.Distance(target, pos);
 			if (d <= EndShrinkDist)
 			{
+				_view.PlayFx(_target.Position);
 				float shrinkK = Mathf.InverseLerp(EndShrinkDist, 0f, d);
 				float scale = Mathf.Lerp(1f, EndShrinkMin, Smooth01(shrinkK));
 				_view.SetScale01(scale);
@@ -212,7 +213,6 @@ namespace _Main.Scripts.Collectibles
 			if (_state == State.Collected) return;
 			_state = State.Collected;
 			_inventory.Add(_view.Kind, _view.Amount);
-			_view.PlayFx(_target.Position);
 			_view.DestroySelf();
 		}
 
