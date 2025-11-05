@@ -873,14 +873,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: The Lying Pines
+  metroPackageName: monini
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: The Lying Pines
+  metroApplicationDescription: monini
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -954,7 +954,7 @@ PlayerSettings:
   cloudProjectId: 07a48003-8971-495b-9deb-03d0a888c696
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: The Lying Pines
+  projectName: monini
   organizationId: lena-7ce0c734-49c5-463f-954b-69562ce330ea
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
