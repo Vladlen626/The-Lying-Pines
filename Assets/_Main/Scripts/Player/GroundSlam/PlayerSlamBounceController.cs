@@ -59,7 +59,8 @@ namespace _Main.Scripts.Player
 			public string AudioImpact = "event:/ground_slam_impact";
 		}
 
-		private readonly Model _cfg = new();
+                private readonly Model _cfg = new();
+                private readonly Collider[] _impactBuffer = new Collider[16];
 
 		public PlayerSlamBounceController(
 			IInputService input,
@@ -191,49 +192,53 @@ namespace _Main.Scripts.Player
 			var pos = _view.Position;
 
 			// кого бьём
-			var hits = Physics.OverlapSphere(
-				pos,
-				_cfg.ImpactRadius,
-				_cfg.ImpactMask,
-				QueryTriggerInteraction.Collide
-			);
+                        int hitCount = Physics.OverlapSphereNonAlloc(
+                                pos,
+                                _cfg.ImpactRadius,
+                                _impactBuffer,
+                                _cfg.ImpactMask,
+                                QueryTriggerInteraction.Collide
+                        );
 
-			var ctx = new ImpactCtx
-			{
-				Position = pos,
-				Radius = _cfg.ImpactRadius,
-				Force = Mathf.Abs(_cfg.DiveDownSpeed),
-				Source = _view.PlayerTransform
-			};
+                        var ctx = new ImpactCtx
+                        {
+                                Position = pos,
+                                Radius = _cfg.ImpactRadius,
+                                Force = Mathf.Abs(_cfg.DiveDownSpeed),
+                                Source = _view.PlayerTransform
+                        };
 
-			// 1) Ломаем то, что под маской
-			for (int i = 0; i < hits.Length; i++)
-			{
-				var go = hits[i].attachedRigidbody ? hits[i].attachedRigidbody.gameObject : hits[i].gameObject;
-				if (go.TryGetComponent<ISlamImpactReceiver>(out var r))
-					r.OnSlamImpact(ctx);
-			}
+                        // 1) Ломаем то, что под маской
+                        for (int i = 0; i < hitCount; i++)
+                        {
+                                var col = _impactBuffer[i];
+                                if (!col) continue;
+                                var go = col.attachedRigidbody ? col.attachedRigidbody.gameObject : col.gameObject;
+                                if (go.TryGetComponent<ISlamImpactReceiver>(out var r))
+                                        r.OnSlamImpact(ctx);
+                        }
 
-			// 2) Временно игнорим коллизию с разбитыми объектами — чтобы пролететь сквозь них
-			TemporarilyIgnoreDestructibles(hits, _view.Controller, 0.20f).Forget();
+                        // 2) Временно игнорим коллизию с разбитыми объектами — чтобы пролететь сквозь них
+                        TemporarilyIgnoreDestructibles(hitCount, _view.Controller, 0.20f).Forget();
 
 			// 3) Мягко доснэпаться к настоящей земле под объектом (чтобы оттолкнуться именно от пола)
 			SnapDownToGroundAsync(~_cfg.ImpactMask).Forget();
 		}
 
-		private async UniTaskVoid TemporarilyIgnoreDestructibles(Collider[] cols, CharacterController cc, float seconds)
-		{
-			if (cc == null || cols == null || cols.Length == 0) return;
+                private async UniTaskVoid TemporarilyIgnoreDestructibles(int hitCount, CharacterController cc, float seconds)
+                {
+                        if (cc == null || hitCount <= 0) return;
 
-			for (int i = 0; i < cols.Length; i++)
-			{
-				var col = cols[i];
-				if (col == null) continue;
+                        for (int i = 0; i < hitCount; i++)
+                        {
+                                var col = _impactBuffer[i];
+                                if (col == null) continue;
 
-				Physics.IgnoreCollision(cc, col, true);
-				_ = RestoreCollisionLater(cc, col, seconds);
-			}
-		}
+                                Physics.IgnoreCollision(cc, col, true);
+                                _ = RestoreCollisionLater(cc, col, seconds);
+                                _impactBuffer[i] = null;
+                        }
+                }
 
 		private async UniTask RestoreCollisionLater(Collider a, Collider b, float seconds)
 		{
